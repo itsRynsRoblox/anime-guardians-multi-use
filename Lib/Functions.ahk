@@ -58,8 +58,6 @@ OpenDiscordLink() {
     ; Hide all dropdowns first
     StoryDropdown.Visible := false
     StoryActDropdown.Visible := false
-    LegendDropDown.Visible := false
-    LegendActDropdown.Visible := false
     RaidDropdown.Visible := false
     RaidActDropdown.Visible := false
     
@@ -67,10 +65,6 @@ OpenDiscordLink() {
         StoryDropdown.Visible := true
         StoryActDropdown.Visible := true
         mode := "Story"
-    } else if (selected = "Legend") {
-        LegendDropDown.Visible := true
-        LegendActDropdown.Visible := true
-        mode := "Legend"
     } else if (selected = "Raid") {
         RaidDropdown.Visible := true
         RaidActDropdown.Visible := true
@@ -86,14 +80,6 @@ OnStoryChange(*) {
         StoryActDropdown.Visible := true
     } else {
         StoryActDropdown.Visible := false
-    }
-}
-
-OnLegendChange(*) {
-    if (LegendDropDown.Text != "") {
-        LegendActDropdown.Visible := true
-    } else {
-        LegendActDropdown.Visible := false
     }
 }
 
@@ -121,15 +107,6 @@ OnConfirmClick(*) {
         ReturnLobbyBox.Visible := (StoryActDropdown.Text = "Infinity")
         NextLevelBox.Visible := (StoryActDropdown.Text != "Infinity")
     }
-    ; For Legend mode, check if both Legend and Act are selected
-    else if (ModeDropdown.Text = "Legend") {
-        if (LegendDropDown.Text = "" || LegendActDropdown.Text = "") {
-            AddToLog("Please select both Legend Stage and Act before confirming")
-            return
-        }
-        AddToLog("Selected " LegendDropDown.Text " - " LegendActDropdown.Text)
-        ReturnLobbyBox.Visible := true
-    }
     ; For Raid mode, check if both Raid and RaidAct are selected
     else if (ModeDropdown.Text = "Raid") {
         if (RaidDropdown.Text = "" || RaidActDropdown.Text = "") {
@@ -155,8 +132,6 @@ OnConfirmClick(*) {
     ModeDropdown.Visible := false
     StoryDropdown.Visible := false
     StoryActDropdown.Visible := false
-    LegendDropDown.Visible := false
-    LegendActDropdown.Visible := false
     RaidDropdown.Visible := false
     RaidActDropdown.Visible := false
     ConfirmButton.Visible := false

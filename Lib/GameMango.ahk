@@ -261,7 +261,7 @@ ValentineMode() {
     StartEvent()
 
 
-    RestartStage()
+    RestartStage(false)
 }
 
 StoryMode() {
@@ -276,7 +276,7 @@ StoryMode() {
     StoryMovement()
     
     ; Start stage
-    while !(ok:=FindText(&X, &Y, 390-150000, 464-150000, 390+150000, 464+150000, 0, 0, StoryUI)) {
+    while !(ok:=FindText(&X, &Y, 322, 212, 445, 246, 0, 0, SelectAct)) {
         StoryMovement()
     }
 
@@ -286,35 +286,6 @@ StoryMode() {
     ; Handle play mode selection
     PlayHere()
     RestartStage(false)
-}
-
-
-LegendMode() {
-    global LegendDropdown, LegendActDropdown
-    
-    ; Get current map and act
-    currentLegendMap := LegendDropdown.Text
-    currentLegendAct := LegendActDropdown.Text
-    
-    ; Execute the movement pattern
-    AddToLog("Moving to position for " currentLegendMap)
-    StoryMovement()
-    
-    ; Start stage
-    while !(ok := FindText(&X, &Y, 325, 520, 489, 587, 0, 0, Story)) {
-        StoryMovement()
-    }
-    AddToLog("Starting " currentLegendMap " - " currentLegendAct)
-    StartLegend(currentLegendMap, currentLegendAct)
-
-    ; Handle play mode selection
-    if (MatchMaking.Value) {
-        FindMatch()
-    } else {
-        PlayHere()
-    }
-
-    RestartStage(true)
 }
 
 RaidMode() {
@@ -329,9 +300,10 @@ RaidMode() {
     RaidMovement()
     
     ; Start stage
-    while !(ok := FindText(&X, &Y, 325, 520, 489, 587, 0, 0, Story)) {
+    while !(ok := FindText(&X, &Y, 322, 212, 445, 246, 0, 0, SelectAct)) {
         RaidMovement()
     }
+
     AddToLog("Starting " currentRaidMap " - " currentRaidAct)
     StartRaid(currentRaidMap, currentRaidAct)
     ; Handle play mode selection
@@ -341,7 +313,7 @@ RaidMode() {
         PlayHere()
     }
 
-    RestartStage(true)
+    RestartStage(false)
 }
 
 MonitorEndScreen() {
@@ -382,7 +354,7 @@ MonitorEndScreen() {
                     return CheckLobby()
                 } else {
                     AddToLog("Replay raid")
-                    ClickUntilGone(0, 0, 80, 85, 739, 224, ReturnToLobbyText, +120, -35)
+                    ClickUntilGone(0, 0, 80, 85, 739, 224, ReturnToLobbyText, -120, 0)
                     return RestartStage(true)
                 }
             }
@@ -549,49 +521,6 @@ StartStory(map, StoryActDropdown) {
     }
 }
 
-StartLegend(map, LegendActDropdown) {
-    
-    FixClick(640, 70) ; Closes Player leaderboard
-    Sleep(500)
-    navKeys := GetNavKeys()
-    for key in navKeys {
-        SendInput("{" key "}")
-    }
-    Sleep(500)
-    SendInput("{Down}")
-    Sleep(500)
-    SendInput("{Enter}") ; Opens Legend Stage
-
-    downArrows := GetLegendDownArrows(map) ; Map selection down arrows
-    Loop downArrows {
-        SendInput("{Down}")
-        Sleep(200)
-    }
-    
-    SendInput("{Enter}") ; Select LegendStage
-    Sleep(500)
-
-    Loop 4 {
-        SendInput("{Up}") ; Makes sure it selects act
-        Sleep(200)
-    }
-
-    SendInput("{Left}") ; Go to act selection
-    Sleep(1000)
-    
-    actArrows := GetLegendActDownArrows(LegendActDropdown) ; Act selection down arrows
-    Loop actArrows {
-        SendInput("{Down}")
-        Sleep(200)
-    }
-
-    SendInput("{Enter}") ; Select Act
-    Sleep(500)
-    for key in navKeys {
-        SendInput("{" key "}")
-    }
-}
-
 StartRaid(map, RaidActDropdown) {
     FixClick(640, 70) ; Closes Player leaderboard
     Sleep(500)
@@ -601,30 +530,34 @@ StartRaid(map, RaidActDropdown) {
     }
     Sleep(500)
 
+    leftArrows := 7 ; Go Over To Story
+    Loop leftArrows {
+        SendInput("{Left}")
+        Sleep(200)
+    }
+
     downArrows := GetRaidDownArrows(map) ; Map selection down arrows
     Loop downArrows {
         SendInput("{Down}")
         Sleep(200)
     }
 
-    SendInput("{Enter}") ; Select Raid
-
-    Loop 4 {
-        SendInput("{Up}") ; Makes sure it selects act
-        Sleep(200)
-    }
-
-    SendInput("{Left}") ; Go to act selection
+    SendInput("{Enter}") ; Select storymode
     Sleep(500)
+
+    SendInput("{Right}") ; Go to act selection
+    Sleep(1000)
+    SendInput("{Right}")
+    Sleep(1000)
     
-    actArrows := GetRaidActDownArrows(RaidActDropdown) ; Act selection down arrows
+    actArrows := GetRaidActDownArrows=(RaidActDropdown) ; Act selection down arrows
     Loop actArrows {
         SendInput("{Down}")
         Sleep(200)
     }
     
     SendInput("{Enter}") ; Select Act
-    Sleep(300)
+    Sleep(500)
     for key in navKeys {
         SendInput("{" key "}")
     }
@@ -681,32 +614,16 @@ GetStoryActDownArrows(StoryActDropdown) {
     }
 }
 
-
-GetLegendDownArrows(map) {
-    switch map {
-        case "Magic Hills": return 1
-    }
-}
-
-GetLegendActDownArrows(LegendActDropdown) {
-    switch LegendActDropdown {
-        case "Act 1": return 1
-    }
-}
-
 GetRaidDownArrows(map) {
     switch map {
-        case "The Spider": return 1
+        case "Lawless City": return 0
+        case "Temple": return 1
     }
 }
 
 GetRaidActDownArrows(RaidActDropdown) {
     switch RaidActDropdown {
-        case "Act 1": return 1
-        case "Act 2": return 2
-        case "Act 3": return 3
-        case "Act 4": return 4
-        case "Act 5": return 5
+        case "Act 1": return 0
     }
 }
 
@@ -773,13 +690,13 @@ BasicSetup(replay := false) {
         FixClick(564, 72) ; Closes Player leaderboard
         Sleep 300
         CloseChat()
-        Sleep 300
+        Sleep 1500
     }
     CheckForFastWaves()
     Sleep 1500
     if (!replay) {
         Zoom()
-        Sleep 300
+        Sleep 1500
     }
     CheckForVoteScreen()
     Sleep 300
@@ -832,12 +749,35 @@ HandleMapMovement(MapName) {
     switch MapName {
         case "Large Village":
             MoveForLargeVillage()
+        case "Monster City":
+            MoveForMonsterCity()    
+        case "Lawless City":
+            MoveForLawlessCity()    
+        case "Temple":
+            MoveForTemple()
     }
 }
 
 MoveForLargeVillage() {
     Fixclick(586, 545, "Right")
     Sleep (6000)
+}
+
+MoveForMonsterCity() {
+    Fixclick(515 366, "Right")
+    Sleep (3500)
+}
+
+MoveForLawlessCity() {
+    Fixclick(507, 194, "Right")
+    Sleep (6000)
+}
+
+MoveForTemple() {
+    FixClick(747, 456, "Right")
+    Sleep 3000
+    FixClick(550, 300, "Right")
+    Sleep 3000
 }
 
 RestartStage(seamless := false) {
@@ -1004,9 +944,6 @@ StartSelectedMode() {
     FixClick(400,390)
     if (ModeDropdown.Text = "Story") {
         StoryMode()
-    }
-    else if (ModeDropdown.Text = "Legend") {
-        LegendMode()
     }
     else if (ModeDropdown.Text = "Raid") {
         RaidMode()
