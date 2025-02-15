@@ -190,7 +190,7 @@ ShowSettingsGUI(*) {
 OpenGuide(*) {
     GuideGUI := Gui("+AlwaysOnTop")
     GuideGUI.SetFont("s10 bold", "Segoe UI")
-    GuideGUI.Title := "Anime adventures settings (Thank you faxi)"
+    GuideGUI.Title := "Anime Guardians Guide"
 
     GuideGUI.BackColor := "0c000a"
     GuideGUI.MarginX := 20
@@ -199,16 +199,9 @@ OpenGuide(*) {
     ; Add Guide content
     GuideGUI.SetFont("s16 bold", "Segoe UI")
 
-    GuideGUI.Add("Text", "x0 w800 cWhite +Center", "1 - In your AA settings make sure you have these 2 settings set to this")
-    GuideGUI.Add("Picture", "x100 w600 h160 cWhite +Center", "Images\aasettings.png")
-
-    GuideGUI.Add("Text", "x0 w800 cWhite +Center", "2 - In your ROBLOX settings, make sure your keyboard is set to click to move and your graphics are set to 1 and enable UI navigation")
+    GuideGUI.Add("Text", "x0 w800 cWhite +Center", "1 - In your ROBLOX settings, make sure your keyboard is set to click to move and your graphics are set to 1 and enable UI navigation")
     GuideGUI.Add("Picture", "x50 w700   cWhite +Center", "Images\Clicktomove.png")
     GuideGUI.Add("Picture", "x50 w700   cWhite +Center", "Images\graphics1.png")
-    GuideGUI.Add("Text", "x0 w800 cWhite +Center", "3 - Set up the unit setup however you want, however I'd avoid hill only units       if you can since it might break")
-
-    GuideGUI.Add("Text", "x0 w800 cWhite +Center", "4 - Rejoin Anime Adventures, dont move your camera at all and press F2 to start the macro. Good luck!" )
-
     GuideGUI.Show("w800")
 }
 

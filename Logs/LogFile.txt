@@ -319,3 +319,11 @@ Images\Game\unit_manager.png 00:26
 
 ==Ryn's Anime Guardians Macrov1.0==
   Start Time: [12h.19m.22s]
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [18h.41m.49s]
+Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [18h.42m.37s]
+Configuration settings loaded successfully 00:00
