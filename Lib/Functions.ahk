@@ -75,6 +75,9 @@ OpenDiscordLink() {
         RaidDropdown.Visible := true
         RaidActDropdown.Visible := true
         mode := "Raid"
+    } else if (selected = "Valentine's Event") {
+        MatchMaking.Visible := true
+        mode := "Valentine's Event"
     }
 }
 
@@ -115,9 +118,8 @@ OnConfirmClick(*) {
             return
         }
         AddToLog("Selected " StoryDropdown.Text " - " StoryActDropdown.Text)
-        MatchMaking.Visible := (StoryActDropdown.Text = "Infinity")
         ReturnLobbyBox.Visible := (StoryActDropdown.Text = "Infinity")
-        ;NextLevelBox.Visible := (StoryActDropdown.Text != "Infinity")
+        NextLevelBox.Visible := (StoryActDropdown.Text != "Infinity")
     }
     ; For Legend mode, check if both Legend and Act are selected
     else if (ModeDropdown.Text = "Legend") {
@@ -126,7 +128,6 @@ OnConfirmClick(*) {
             return
         }
         AddToLog("Selected " LegendDropDown.Text " - " LegendActDropdown.Text)
-        MatchMaking.Visible := true
         ReturnLobbyBox.Visible := true
     }
     ; For Raid mode, check if both Raid and RaidAct are selected
@@ -136,6 +137,10 @@ OnConfirmClick(*) {
             return
         }
         AddToLog("Selected " RaidDropdown.Text " - " RaidActDropdown.Text)
+        ReturnLobbyBox.Visible := true
+    }
+    else if (ModeDropdown.Text = "Valentine's Event") {
+        AddToLog("Selected " ModeDropdown.Text)
         MatchMaking.Visible := true
         ReturnLobbyBox.Visible := true
     } else {

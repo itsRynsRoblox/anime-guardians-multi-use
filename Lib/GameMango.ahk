@@ -249,6 +249,21 @@ ChallengeMode() {
     RestartStage()
 }
 
+ValentineMode() {    
+    AddToLog("Moving to Valentine's Event")
+    ValentineMovement()
+
+    while !(ok := FindText(&X, &Y, 190, 125, 447, 170, 0, 0, BossEvent)) {
+        ValentineMode()
+    }
+
+    AddToLog("Starting Valentine's Event")
+    StartEvent()
+
+
+    RestartStage()
+}
+
 StoryMode() {
     global StoryDropdown, StoryActDropdown
     
@@ -330,7 +345,7 @@ RaidMode() {
 }
 
 MonitorEndScreen() {
-    global mode, StoryDropdown, StoryActDropdown, ReturnLobbyBox, MatchMaking, challengeStartTime, inChallengeMode
+    global mode, StoryDropdown, StoryActDropdown, ReturnLobbyBox, MatchMaking
 
     Loop {
         Sleep(3000)  
@@ -454,6 +469,27 @@ ChallengeMovement() {
     SendInput ("{a down}")
     sleep (7000)
     SendInput ("{a up}")
+}
+
+ValentineMovement() {
+    FixClick(75, 250) ; Click Teleport
+    sleep (1000)
+    FixClick(520, 270) ; Click Play/Portals
+    sleep (1000)
+    SendInput ("{s down}")
+    Sleep(3000)
+    SendInput ("{s up}")
+    Sleep 200
+    KeyWait "S"
+    Sleep 200
+    SendInput ("{d down}")
+    Sleep(2500)
+    SendInput ("{d up}")
+    Sleep 200
+    KeyWait "D"
+    Sleep 200
+    SendInput ("{E}")
+    Sleep 1500
 }
 
 RaidMovement() {
@@ -594,6 +630,15 @@ StartRaid(map, RaidActDropdown) {
     }
 }
 
+StartEvent() {
+    ; Handle play mode selection
+    if (MatchMaking.Value) {
+        FindMatch()
+    } else {
+        FixClick(220, 440) ; Click Solo
+    }
+}
+
 PlayHere() {
     FixClick(385, 429) ; Click Confirm
     Sleep (1000)
@@ -607,12 +652,12 @@ FindMatch() {
     Loop {
         if (A_TickCount - startTime > 50000) {
             AddToLog("Matchmaking timeout, restarting mode")
-            FixClick(400, 520)
+            FixClick(355, 440)  ; Click Matchmaking to cancel
+            Sleep(300)
+            FixClick(500, 440)  ; Close Interface
             return StartSelectedMode()
         }
-        FixClick(400, 435)  ; Play Here or Find Match 
-        Sleep(300)
-        FixClick(460, 330)  ; Click Find Match
+        FixClick(355, 440)  ; Click Matchmaking
         Sleep(300)
         return true
     }
@@ -755,14 +800,19 @@ DetectMap() {
             return "no map found"
         }
 
+        if (ModeDropdown.Text = "Story") {
+            AddToLog("Map detected: " StoryDropdown.Text)
+            return StoryDropdown.Text
+        }
+
         if (ModeDropdown.Text = "Raid") {
             AddToLog("Map detected: " RaidDropdown.Text)
             return RaidDropdown.Text
         }
 
-        if (ModeDropdown.Text = "Story") {
-            AddToLog("Map detected: " StoryDropdown.Text)
-            return StoryDropdown.Text
+        if (ModeDropdown.Text = "Valentine's Event") {
+            AddToLog("Map detected: " ModeDropdown.Text)
+            return ModeDropdown.Text
         }
 
         ; Check for Modifier Cards
@@ -771,16 +821,6 @@ DetectMap() {
             return "no map found"
         }
 
-        mapPatterns := Map(
-            "Snowy Town", SnowyTown
-        )
-
-        for mapName, pattern in mapPatterns {
-            if (ok := FindText(&X, &Y, 10, 90, 415, 160, 0, 0, pattern)) {
-                    AddToLog("Detected map: " mapName)
-                    return mapName
-                }
-            }
         Sleep 1000
         Reconnect()
     }
@@ -798,24 +838,6 @@ HandleMapMovement(MapName) {
 MoveForLargeVillage() {
     Fixclick(586, 545, "Right")
     Sleep (6000)
-}
-
-MoveForWinterEvent() {
-    loop {
-        if FindAndClickColor() {
-            break
-        }
-        else {
-            AddToLog("Color not found. Turning again.")
-            SendInput ("{Left up}")
-            Sleep 200
-            SendInput ("{Left down}")
-            Sleep 750
-            SendInput ("{Left up}")
-            KeyWait "Left" ; Wait for key to be fully processed
-            Sleep 200
-        }
-    }
 }
 
 RestartStage(seamless := false) {
@@ -978,25 +1000,9 @@ StartedGame() {
 }
 
 StartSelectedMode() {
-    global inChallengeMode, firstStartup, challengeStartTime
     FixClick(400,340)
     FixClick(400,390)
-
-    if (ChallengeBox.Value && firstStartup) {
-        AddToLog("Auto Challenge enabled - starting with challenge")
-        inChallengeMode := true
-        firstStartup := false
-        challengeStartTime := A_TickCount  ; Set initial challenge time
-        ChallengeMode()
-        return
-    }
-    ; If we're in challenge mode, do challenge
-    if (inChallengeMode) {
-        AddToLog("Starting Challenge Mode")
-        ChallengeMode()
-        return
-    }    
-    else if (ModeDropdown.Text = "Story") {
+    if (ModeDropdown.Text = "Story") {
         StoryMode()
     }
     else if (ModeDropdown.Text = "Legend") {
@@ -1004,6 +1010,9 @@ StartSelectedMode() {
     }
     else if (ModeDropdown.Text = "Raid") {
         RaidMode()
+    }
+    else if (ModeDropdown.Text = "Valentine's Event") {
+        ValentineMode()
     }
 }
 

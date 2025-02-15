@@ -1,4 +1,4 @@
-Mode=
+Mode=Valentine's Event
 
 
 Enabled1=1
@@ -30,4 +30,4 @@ Speed=3
 
 
 [Matchmaking]
-Matchmake=1
+Matchmake=0
