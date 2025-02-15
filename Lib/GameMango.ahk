@@ -9,6 +9,7 @@ Hotkey(F2Key, (*) => StartMacro())
 Hotkey(F3Key, (*) => Reload())
 Hotkey(F4Key, (*) => TogglePause())
 
+
 StartMacro(*) {
     if (!ValidateMode()) {
         return
@@ -91,7 +92,7 @@ PlacingUnits() {
                         break
                     }
                     
-                    if CheckForXp()
+                    if CheckForResults()
                         return MonitorStage()
                     Reconnect()
                     CheckEndAndRoute()
@@ -105,9 +106,9 @@ PlacingUnits() {
     UpgradeUnits()
 }
 
-CheckForXp() {
-    ; Check for lobby text
-    if (ok := FindText(&X, &Y, 340, 369, 437, 402, 0, 0, XpText) or (ok:=FindText(&X, &Y, 539, 155, 760, 189, 0, 0, XpText2))) {
+CheckForResults() {
+    ; Check for results text
+    if (ok := FindText(&X, &Y, 276, 340, 359, 363, 0, 0, Results)) {
         FixClick(325, 185)
         FixClick(560, 560)
         return true
@@ -167,7 +168,7 @@ UpgradeUnits() {
                                 slotDone := false
                                 UpgradeUnit(coord.x, coord.y)
 
-                                if CheckForXp() {
+                                if CheckForResults() {
                                     AddToLog("Stage ended during upgrades, proceeding to results")
                                     successfulCoordinates := []
                                     MonitorStage()
@@ -212,7 +213,7 @@ UpgradeUnits() {
             for index, coord in successfulCoordinates {
                 UpgradeUnit(coord.x, coord.y)
 
-                if CheckForXp() {
+                if CheckForResults() {
                     AddToLog("Stage ended during upgrades, proceeding to results")
                     successfulCoordinates := []
                     MonitorStage()
@@ -263,12 +264,13 @@ StoryMode() {
     while !(ok:=FindText(&X, &Y, 390-150000, 464-150000, 390+150000, 464+150000, 0, 0, StoryUI)) {
         StoryMovement()
     }
+
     AddToLog("Starting " currentStoryMap " - " currentStoryAct)
     StartStory(currentStoryMap, currentStoryAct)
 
     ; Handle play mode selection
     PlayHere()
-    RestartStage()
+    RestartStage(false)
 }
 
 
@@ -297,7 +299,7 @@ LegendMode() {
         PlayHere()
     }
 
-    RestartStage()
+    RestartStage(true)
 }
 
 RaidMode() {
@@ -324,7 +326,7 @@ RaidMode() {
         PlayHere()
     }
 
-    RestartStage()
+    RestartStage(true)
 }
 
 MonitorEndScreen() {
@@ -336,79 +338,49 @@ MonitorEndScreen() {
         FixClick(560, 560)
         FixClick(560, 560)
 
-        if (ok := FindText(&X, &Y, 300, 190, 360, 250, 0, 0, UnitExit)) {
-            ClickUntilGone(0, 0, 300, 190, 360, 250, UnitExit, -4, -35)
-        }
-
-        if (ok := FindText(&X, &Y, 260, 400, 390, 450, 0, 0, NextText)) {
-            ClickUntilGone(0, 0, 260, 400, 390, 450, NextText, 0, -40)
-        }
-
         ; Now handle each mode
-        if (ok := FindText(&X, &Y, 80, 85, 739, 224, 0, 0, LobbyText) or (ok := FindText(&X, &Y, 80, 85, 739, 224, 0, 0, LobbyText2))) {
-            AddToLog("Found Lobby Text - Current Mode: " (inChallengeMode ? "Challenge" : mode))
+        if (ok := FindText(&X, &Y, 476, 442, 595, 473, 0, 0, ReturnToLobbyText)) {
+            AddToLog("Found Lobby Text - Current Mode: " mode)
             Sleep(2000)
-
-            ; Challenge mode logic first
-            if (inChallengeMode) {
-                 AddToLog("Challenge completed - returning to " mode " mode")
-                inChallengeMode := false
-                challengeStartTime := A_TickCount
-                ClickUntilGone(0, 0, 80, 85, 739, 224, LobbyText, 0, -35, LobbyText2)
-                return CheckLobby()
-            }
-
-            ; Check if it's time for challenge mode
-            if (!inChallengeMode && ChallengeBox.Value) {
-                timeElapsed := A_TickCount - challengeStartTime
-                if (timeElapsed >= 1800000) {
-                    AddToLog("30 minutes passed - switching to Challenge mode")
-                    inChallengeMode := true
-                    challengeStartTime := A_TickCount
-                    ClickUntilGone(0, 0, 80, 85, 739, 224, LobbyText, 0, -35, LobbyText2)
-                    return CheckLobby()
-                }
-            }
-
 
             if (mode = "Story") {
                 AddToLog("Handling Story mode end")
                 if (StoryActDropdown.Text != "Infinity") {
                     if (NextLevelBox.Value && lastResult = "win") {
                         AddToLog("Next level")
-                        ClickUntilGone(0, 0, 80, 85, 739, 224, LobbyText, +260, -35, LobbyText2)
+                        ClickUntilGone(0, 0, 253, 209, 380, 237, VictoryText, 150, 200)
                     } else {
                         AddToLog("Replay level")
-                        ClickUntilGone(0, 0, 80, 85, 739, 224, LobbyText, +120, -35, LobbyText2)
+                        ClickUntilGone(0, 0, 260, 206, 372, 240, DefeatText, -4, 200)
                     }
                 } else {
                     AddToLog("Story Infinity replay")
-                    ClickUntilGone(0, 0, 80, 85, 739, 224, LobbyText, +120, -35, LobbyText2)
+                    ClickUntilGone(0, 0, 260, 206, 372, 240, DefeatText, 50, 200)
                 }
-                return RestartStage()
+                return RestartStage(true)
             }
             else if (mode = "Raid") {
                 AddToLog("Handling Raid end")
                 if (ReturnLobbyBox.Value) {
                     AddToLog("Return to lobby")
-                    ClickUntilGone(0, 0, 80, 85, 739, 224, LobbyText, 0, -35, LobbyText2)
+                    ClickUntilGone(0, 0, 80, 85, 739, 224, ReturnToLobbyText, 0, -35)
                     return CheckLobby()
                 } else {
                     AddToLog("Replay raid")
-                    ClickUntilGone(0, 0, 80, 85, 739, 224, LobbyText, +120, -35, LobbyText2)
-                    return RestartStage()
+                    ClickUntilGone(0, 0, 80, 85, 739, 224, ReturnToLobbyText, +120, -35)
+                    return RestartStage(true)
                 }
             }
             else {
                 AddToLog("Handling end case")
                 if (ReturnLobbyBox.Value) {
                     AddToLog("Return to lobby enabled")
-                    ClickUntilGone(0, 0, 80, 85, 739, 224, LobbyText, 0, -35, LobbyText2)
+                    ClickUntilGone(0, 0, 80, 85, 739, 224, ReturnToLobbyText, 0, -35)
                     return CheckLobby()
                 } else {
                     AddToLog("Replaying")
-                    ClickUntilGone(0, 0, 80, 85, 739, 224, LobbyText, +120, -35, LobbyText2)
-                    return RestartStage()
+                    ClickUntilGone(0, 0, 80, 85, 739, 224, ReturnToLobbyText, +120, -35)
+                    return RestartStage(true)
                 }
             }
         }
@@ -428,14 +400,14 @@ MonitorStage() {
         
         if (mode = "Story" && StoryActDropdown.Text = "Infinity") {
             timeElapsed := A_TickCount - lastClickTime
-            if (timeElapsed >= 300000) {  ; 5 minutes
-                AddToLog("Performing anti-AFK click")
-                FixClick(560, 560)  ; Move click
+            if (timeElapsed >= 5000) {  ; 5 seconds
+                ;AddToLog("Performing anti-AFK click")
+                FixClick(300, 400)  ; Move click
                 lastClickTime := A_TickCount
             }
         }
-        ; Check for XP screen
-        if CheckForXp() {
+        ; Check for Results screen
+        if CheckForResults() {
             AddToLog("Checking win/loss status")
             
             ; Calculate stage end time here, before checking win/loss
@@ -447,13 +419,13 @@ MonitorStage() {
             } 
             
             ; Check for Victory or Defeat
-            if (ok := FindText(&X, &Y, 150, 180, 350, 260, 0, 0, VictoryText)) {
+            if (ok := FindText(&X, &Y, 253, 209, 380, 237, 0, 0, VictoryText)) {
                 AddToLog("Victory detected - Stage Length: " stageLength)
                 Wins += 1
                 SendWebhookWithTime(true, stageLength)
                 return MonitorEndScreen()  ; Original behavior for other modes
             }
-            else if (ok := FindText(&X, &Y, 150, 180, 350, 260, 0, 0, DefeatText)) {
+            else if (ok := FindText(&X, &Y, 260, 206, 372, 240, 0, 0, DefeatText)) {
                 AddToLog("Defeat detected - Stage Length: " stageLength)
                 loss += 1
                 SendWebhookWithTime(false, stageLength) 
@@ -525,6 +497,10 @@ StartStory(map, StoryActDropdown) {
     Sleep(1000)
     
     actArrows := GetStoryActDownArrows(StoryActDropdown) ; Act selection down arrows
+    if (mode = "Story" && StoryActDropdown = "Infinity") {
+        FixClick(284,433)
+        Sleep 200
+    }
     Loop actArrows {
         SendInput("{Down}")
         Sleep(200)
@@ -692,9 +668,10 @@ GetRaidActDownArrows(RaidActDropdown) {
 Zoom() {
     MouseMove(400, 300)
     Sleep 100
-
+    FixClick(400, 300)
+    Sleep 100
     ; Zoom in smoothly
-    Loop 10 {
+    Loop 12 {
         Send "{WheelUp}"
         Sleep 50
     }
@@ -744,16 +721,23 @@ CloseChat() {
     }
 }
 
-BasicSetup() {
-    SendInput("{Tab}") ; Closes Player leaderboard
+BasicSetup(replay := false) {
+    if (!replay) {
+        SendInput("{Tab}") ; Closes Player leaderboard
+        Sleep 300
+        FixClick(564, 72) ; Closes Player leaderboard
+        Sleep 300
+        CloseChat()
+        Sleep 300
+    }
+    CheckForFastWaves()
+    Sleep 1500
+    if (!replay) {
+        Zoom()
+        Sleep 300
+    }
+    CheckForVoteScreen()
     Sleep 300
-    FixClick(564, 72) ; Closes Player leaderboard
-    Sleep 300
-    CloseChat()
-    Sleep 300
-    Zoom()
-    Sleep 300
-    TpSpawn()
 }
 
 DetectMap() {
@@ -771,8 +755,18 @@ DetectMap() {
             return "no map found"
         }
 
-        ; Check for vote screen
-        if (ok := FindAndClickImage(UnitManager))  {
+        if (ModeDropdown.Text = "Raid") {
+            AddToLog("Map detected: " RaidDropdown.Text)
+            return RaidDropdown.Text
+        }
+
+        if (ModeDropdown.Text = "Story") {
+            AddToLog("Map detected: " StoryDropdown.Text)
+            return StoryDropdown.Text
+        }
+
+        ; Check for Modifier Cards
+        if (ok := FindText(&X, &Y, 681, 381, 778, 434, 0, 0, ModifierCard)) {
             AddToLog("No Map Found or Movement Unnecessary")
             return "no map found"
         }
@@ -796,20 +790,14 @@ HandleMapMovement(MapName) {
     AddToLog("Executing Movement for: " MapName)
     
     switch MapName {
-        case "Snowy Town":
-            MoveForSnowyTown()
+        case "Large Village":
+            MoveForLargeVillage()
     }
 }
 
-MoveForSnowyTown() {
-    Fixclick(700, 125, "Right")
+MoveForLargeVillage() {
+    Fixclick(586, 545, "Right")
     Sleep (6000)
-    Fixclick(615, 115, "Right")
-    Sleep (3000)
-    Fixclick(725, 300, "Right")
-    Sleep (3000)
-    Fixclick(715, 395, "Right")
-    Sleep (3000)
 }
 
 MoveForWinterEvent() {
@@ -830,17 +818,21 @@ MoveForWinterEvent() {
     }
 }
 
-    
-RestartStage() {
+RestartStage(seamless := false) {
     currentMap := DetectMap()
     
     ; Wait for loading
     CheckLoaded()
 
     ; Do initial setup and map-specific movement during vote timer
-    BasicSetup()
-    if (currentMap != "no map found") {
-        HandleMapMovement(currentMap)
+    if (!seamless) {
+        BasicSetup(false)
+        if (currentMap != "no map found") {
+            HandleMapMovement(currentMap)
+        }
+    } else {
+        BasicSetup(true)
+        AddToLog("Game supports seamless replay, skipping most of setup")
     }
 
     ; Wait for game to actually start
@@ -900,7 +892,9 @@ PlaceUnit(x, y, slot := 1) {
     FixClick(x, y)
     Sleep 50
     SendInput("q")
-    
+    sleep 50
+    FixClick(x, y)
+    Sleep 50
     if UnitPlaced() {
         Sleep 15
         return true
@@ -911,7 +905,7 @@ PlaceUnit(x, y, slot := 1) {
 MaxUpgrade() {
     Sleep 500
     ; Check for max text
-    if (ok := FindText(&X, &Y, 160, 215, 330, 420 , 0, 0, MaxText) or (ok:=FindText(&X, &Y, 160, 215, 330, 420, 0, 0, MaxText2))) {
+    if (ok := FindText(&X, &Y, 120, 247, 236, 269, 0, 0, MaxText)) {
         return true
     }
     return false
@@ -920,7 +914,7 @@ MaxUpgrade() {
 UnitPlaced() {
     PlacementSpeed() ; Custom Placement Speed
     ; Check for upgrade text
-    if (ok := FindText(&X, &Y, 160, 215, 330, 420, 0, 0, UpgradeText) or (ok:=FindText(&X, &Y, 160, 215, 330, 420, 0, 0, UpgradeText2))) {
+    if (ok:=FindText(&X, &Y, 118, 246, 241, 273, 0, 0, UpgradeText)) {
         AddToLog("Unit Placed Successfully")
         FixClick(325, 185) ; close upg menu
         return true
@@ -942,9 +936,9 @@ CheckAbility() {
 
 UpgradeUnit(x, y) {
     FixClick(x, y - 3)
-    FixClick(264, 363) ; upgrade button 
-    FixClick(264, 363) ; upgrade button
-    FixClick(264, 363) ; upgrade button
+    SendInput ("{T}")
+    SendInput ("{T}")
+    SendInput ("{T}")
 }
 
 CheckLobby() {
@@ -962,9 +956,9 @@ CheckLobby() {
 CheckLoaded() {
     loop {
         Sleep(1000)
-        
-        ; Check for vote screen
-        if (FindAndClickImage(UnitManager)) {
+    
+        ; Check for enemies alive
+        if (ok := FindText(&X, &Y, 681, 381, 778, 434, 0, 0, ModifierCard)) {
             AddToLog("Successfully Loaded In")
             Sleep(1000)
             break
@@ -977,14 +971,6 @@ CheckLoaded() {
 StartedGame() {
     loop {
         Sleep(1000)
-        if (FindAndClickImage(UnitManager)) {
-            FixClick(350, 103) ; click yes
-            FixClick(350, 100)
-            FixClick(350, 97)
-            continue  ; Keep waiting if vote screen is still there
-        }
-        
-        ; If we don't see vote screen anymore the game has started
         AddToLog("Game started")
         global stageStartTime := A_TickCount
         break
@@ -1046,6 +1032,25 @@ ValidateMode() {
 
 GetNavKeys() {
     return StrSplit(FileExist("Settings\UINavigation.txt") ? FileRead("Settings\UINavigation.txt", "UTF-8") : "\,#,}", ",")
+}
+
+CheckForVoteScreen() {
+    if (ok:=FindText(&X, &Y, 358, 107, 449, 130, 0, 0, VoteScreen)) {
+          AddToLog("Found Vote Screen")
+          FixClick(365, 133)
+          FixClick(365, 133)
+          FixClick(365, 133)
+          return true
+    }
+    return false
+}
+
+CheckForFastWaves() {
+    if (ok:=FindText(&X, &Y, 187, 184, 641, 441, 0, 0, FastWave)) {
+        FindText().Click(X, Y, "L")
+        return true
+    }
+    return false
 }
 
 GenerateRandomPoints() {
@@ -1239,7 +1244,7 @@ GenerateSpiralPoints(rectX := 4, rectY := 123, rectWidth := 795, rectHeight := 4
 }
 
 CheckEndAndRoute() {
-    if (ok := FindText(&X, &Y, 140, 130, 662, 172, 0, 0, LobbyText)) {
+    if (ok := FindText(&X, &Y, 476, 442, 595, 473, 0, 0, ReturnToLobbyText)) {
         AddToLog("Found end screen")
         return MonitorEndScreen()
     }
@@ -1259,19 +1264,9 @@ ClickUntilGone(x, y, searchX1, searchY1, searchX2, searchY2, textToFind, offsetX
 }
 
 PlacementSpeed() {
-    if PlaceSpeed.Text = "2.25 sec" {
-        sleep 2250
-    }
-    else if PlaceSpeed.Text = "2 sec" {
-        sleep 2000
-    }
-    else if PlaceSpeed.Text = "2.5 sec" {
-        sleep 2500
-    }
-    else if PlaceSpeed.Text = "2.75 sec" {
-        sleep 2.75
-    }
-    else if PlaceSpeed.Text = "3 sec" {
-        sleep 3000
-    }
+    speeds := [1000, 1500, 2000, 2500, 3000, 4000]  ; Array of sleep values
+    speedIndex := PlaceSpeed.Value  ; Get the selected speed value
+
+    if speedIndex is number  ; Ensure it's a number
+        sleep speeds[speedIndex]  ; Use the value directly from the array
 }

@@ -62,8 +62,6 @@ OpenDiscordLink() {
     LegendActDropdown.Visible := false
     RaidDropdown.Visible := false
     RaidActDropdown.Visible := false
-    MatchMaking.Visible := false
-    ReturnLobbyBox.Visible := false
     
     if (selected = "Story") {
         StoryDropdown.Visible := true
@@ -119,7 +117,7 @@ OnConfirmClick(*) {
         AddToLog("Selected " StoryDropdown.Text " - " StoryActDropdown.Text)
         MatchMaking.Visible := (StoryActDropdown.Text = "Infinity")
         ReturnLobbyBox.Visible := (StoryActDropdown.Text = "Infinity")
-        NextLevelBox.Visible := (StoryActDropdown.Text != "Infinity")
+        ;NextLevelBox.Visible := (StoryActDropdown.Text != "Infinity")
     }
     ; For Legend mode, check if both Legend and Act are selected
     else if (ModeDropdown.Text = "Legend") {
@@ -160,7 +158,6 @@ OnConfirmClick(*) {
     modeSelectionGroup.Visible := false
     Hotkeytext.Visible := true
     Hotkeytext2.Visible := true
-    Hotkeytext3.Visible := true
     global confirmClicked := true
 }
 
