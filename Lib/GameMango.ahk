@@ -239,14 +239,16 @@ UpgradeUnits() {
 }
 
 ChallengeMode() {    
-    AddToLog("Moving to Challenge mode")
+    AddToLog("Starting Challenge Mode")
     ChallengeMovement()
     
-    while !(ok := FindText(&X, &Y, 325, 520, 489, 587, 0, 0, Story)) {
+    while !(ok := FindText(&X, &Y, 46, 224, 145, 254, 0, 0, ChallengePortal)) {
         ChallengeMovement()
     }
 
-    RestartStage()
+    ; Handle play mode selection
+    PlayHere(false)
+    RestartStage(false)
 }
 
 ValentineMode() {    
@@ -284,7 +286,7 @@ StoryMode() {
     StartStory(currentStoryMap, currentStoryAct)
 
     ; Handle play mode selection
-    PlayHere()
+    PlayHere(true)
     RestartStage(false)
 }
 
@@ -310,7 +312,7 @@ RaidMode() {
     if (MatchMaking.Value) {
         FindMatch()
     } else {
-        PlayHere()
+        PlayHere(true)
     }
 
     RestartStage(false)
@@ -424,23 +426,55 @@ MonitorStage() {
 }
 
 StoryMovement() {
-    FixClick(75, 250) ; Click Teleport
+    ; Click Teleport
+    FixClick(75, 250)
     sleep (1000)
-    FixClick(280, 280) ; Click Play/Portals
+
+    ; Click Play/Portals
+    FixClick(280, 280)
     sleep (1000)
-    FixClick(352, 245) ; Click Story Portal
-    sleep (1000)
-    FixClick(403, 268) ; Click play on story portal
+
+    ; Click search
+    FixClick(300, 178)
+    Sleep(1500)
+        
+    ; Type portal name
+    Send "Story"
+    Sleep(1500)
+
+    ; Click Portal
+    FixClick(196, 234)
+    Sleep 1000
+
+    ; Click Play
+    FixClick(240, 265)
     sleep (1000)
 }
 
 ChallengeMovement() {
-    FixClick(765, 475)
-    Sleep (500)
-    FixClick(300, 415)
-    SendInput ("{a down}")
-    sleep (7000)
-    SendInput ("{a up}")
+    ; Click Teleport
+    FixClick(75, 250)
+    sleep (1000)
+
+    ; Click Play/Portals
+    FixClick(280, 280)
+    sleep (1000)
+
+    ; Click search
+    FixClick(300, 178)
+    Sleep(1500)
+        
+    ; Type portal name
+    Send "Challenge"
+    Sleep(1500)
+
+    ; Click Portal
+    FixClick(196, 234)
+    Sleep 1000
+
+    ; Click Play
+    FixClick(240, 265)
+    sleep (1000)
 }
 
 ValentineMovement() {
@@ -465,13 +499,28 @@ ValentineMovement() {
 }
 
 RaidMovement() {
-    FixClick(75, 250) ; Click Teleport
+    ; Click Teleport
+    FixClick(75, 250)
     sleep (1000)
-    FixClick(280, 280) ; Click Play/Portals
+
+    ; Click Play/Portals
+    FixClick(280, 280)
     sleep (1000)
-    FixClick(435, 237) ; Click Raid Portal
-    sleep (1000)
-    FixClick(480, 272) ; Click play on story portal
+
+    ; Click search
+    FixClick(300, 178)
+    Sleep(1500)
+        
+    ; Type portal name
+    Send "Raid"
+    Sleep(1500)
+
+    ; Click Portal
+    FixClick(196, 234)
+    Sleep 1000
+
+    ; Click Play
+    FixClick(240, 265)
     sleep (1000)
 }
 
@@ -519,6 +568,11 @@ StartStory(map, StoryActDropdown) {
     for key in navKeys {
         SendInput("{" key "}")
     }
+}
+
+StartChallenge() {
+    FixClick(640, 70)
+    Sleep(500)
 }
 
 StartRaid(map, RaidActDropdown) {
@@ -572,9 +626,11 @@ StartEvent() {
     }
 }
 
-PlayHere() {
-    FixClick(385, 429) ; Click Confirm
-    Sleep (1000)
+PlayHere(clickConfirm := true) {
+    if (clickConfirm) {
+        FixClick(385, 429) ; Click Confirm
+        Sleep (1000)
+    }
     FixClick(60, 410) ; Click Start
     Sleep (300)
 }
@@ -944,6 +1000,9 @@ StartSelectedMode() {
     FixClick(400,390)
     if (ModeDropdown.Text = "Story") {
         StoryMode()
+    }
+    else if (ModeDropdown.Text = "Challenge") {
+        ChallengeMode()
     }
     else if (ModeDropdown.Text = "Raid") {
         RaidMode()

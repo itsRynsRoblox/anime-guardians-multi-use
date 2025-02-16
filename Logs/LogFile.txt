@@ -327,3 +327,131 @@ Configuration settings loaded successfully 00:00
 ==Ryn's Anime Guardians Macro v1.0==
   Start Time: [18h.42m.37s]
 Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [18h.51m.19s]
+Configuration settings loaded successfully 00:00
+Configuration settings saved successfully 00:31
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [18h.51m.55s]
+Configuration settings loaded successfully 00:00
+Configuration settings saved successfully 00:04
+Selected Large Village - Infinity 00:40
+Don't forget to enable Click to Move! (I forget sometimes too!) 00:40
+Moving to position for Large Village 00:42
+Starting Large Village - Infinity 00:47
+Determining Movement Necessity on Map... 00:57
+Map detected: Large Village 00:57
+Successfully Loaded In 01:05
+Found Vote Screen 01:13
+Executing Movement for: Large Village 01:14
+Game started 01:22
+Placing Unit 1 (0/1) 01:22
+Unit Placed Successfully 01:35
+Placed Unit 1 (1/1) 01:35
+Placing Unit 2 (0/1) 01:36
+Unit Placed Successfully 01:49
+Placed Unit 2 (1/1) 01:50
+Placing Unit 3 (0/1) 01:50
+Unit Placed Successfully 02:09
+Placed Unit 3 (1/1) 02:09
+Placing Unit 4 (0/1) 02:10
+Unit Placed Successfully 02:28
+Placed Unit 4 (1/1) 02:29
+Placing Unit 5 (0/1) 02:29
+Unit Placed Successfully 02:48
+Placed Unit 5 (1/1) 02:48
+Placing Unit 6 (0/1) 02:49
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [18h.55m.23s]
+Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [10h.13m.45s]
+Configuration settings loaded successfully 00:00
+Selected Temple - Act 1 00:07
+Don't forget to enable Click to Move! (I forget sometimes too!) 00:08
+Moving to position for Temple 00:09
+Starting Temple - Act 1 00:15
+Determining Movement Necessity on Map... 00:23
+Map detected: Temple 00:23
+Successfully Loaded In 00:31
+Executing Movement for: Temple 00:40
+Game started 00:47
+Placing Unit 1 (0/1) 00:48
+Unit Placed Successfully 00:56
+Placed Unit 1 (1/1) 00:56
+Placing Unit 2 (0/1) 00:57
+Unit Placed Successfully 00:59
+Placed Unit 2 (1/1) 01:00
+Placing Unit 3 (0/1) 01:01
+Unit Placed Successfully 01:03
+Placed Unit 3 (1/1) 01:04
+Placing Unit 4 (0/1) 01:05
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [10h.14m.55s]
+Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [10h.26m.20s]
+Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [11h.49m.49s]
+Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [11h.53m.49s]
+Configuration settings loaded successfully 00:00
+Selected Large Village - Act 1 00:03
+Don't forget to enable Click to Move! (I forget sometimes too!) 00:03
+Moving to position for Large Village 00:05
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [11h.54m.02s]
+Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [12h.02m.40s]
+Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [12h.04m.09s]
+Configuration settings loaded successfully 00:00
+Selected Challenge mode 00:08
+Don't forget to enable Click to Move! (I forget sometimes too!) 00:08
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [12h.04m.31s]
+Configuration settings loaded successfully 00:00
+Selected Challenge mode 00:02
+Don't forget to enable Click to Move! (I forget sometimes too!) 00:02
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [12h.04m.44s]
+Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [12h.05m.18s]
+Configuration settings loaded successfully 00:00
+Selected Challenge mode 00:01
+Don't forget to enable Click to Move! (I forget sometimes too!) 00:01
+Starting Challenge Mode 00:03
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [12h.05m.30s]
+Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [12h.06m.16s]
+Configuration settings loaded successfully 00:00
+Selected Challenge mode 00:01
+Don't forget to enable Click to Move! (I forget sometimes too!) 00:01
+Starting Challenge Mode 00:03
+
+==Ryn's Anime Guardians Macro v1.0==
+  Start Time: [12h.06m.30s]
+Configuration settings loaded successfully 00:00
