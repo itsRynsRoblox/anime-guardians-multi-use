@@ -748,6 +748,7 @@ BasicSetup(replay := false) {
         CloseChat()
         Sleep 1500
     }
+    Sleep 2500 ; Added cause sometimes double loading screen
     CheckForFastWaves()
     Sleep 1500
     if (!replay) {
@@ -831,7 +832,7 @@ MoveForLawlessCity() {
 
 MoveForTemple() {
     FixClick(747, 456, "Right")
-    Sleep 3000
+    Sleep 3400
     FixClick(550, 300, "Right")
     Sleep 3000
 }
@@ -910,7 +911,7 @@ PlaceUnit(x, y, slot := 1) {
     FixClick(x, y)
     Sleep 50
     SendInput("q")
-    sleep 50
+    sleep 200 ; Added To Help with Lag
     FixClick(x, y)
     Sleep 50
     if UnitPlaced() {
