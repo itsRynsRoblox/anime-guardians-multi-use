@@ -1,5 +1,5 @@
-Mode=
-
+Mode=Story
+Map=
 
 Enabled1=1
 Enabled2=1
@@ -31,3 +31,11 @@ Speed=3
 
 [Matchmaking]
 Matchmake=0
+
+
+[ReturnToLobby]
+Lobby=0
+
+
+[UINavigation]
+Navigate=1

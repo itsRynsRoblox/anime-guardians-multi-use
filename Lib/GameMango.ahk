@@ -283,7 +283,11 @@ StoryMode() {
     }
 
     AddToLog("Starting " currentStoryMap " - " currentStoryAct)
-    StartStory(currentStoryMap, currentStoryAct)
+    if (UINavToggle.Value) {
+        StartStory(currentStoryMap, currentStoryAct)
+    } else {
+        StartStoryNoUI(currentStoryMap, currentStoryAct)
+    }
 
     ; Handle play mode selection
     PlayHere(true)
@@ -307,7 +311,11 @@ RaidMode() {
     }
 
     AddToLog("Starting " currentRaidMap " - " currentRaidAct)
-    StartRaid(currentRaidMap, currentRaidAct)
+    if (UINavToggle.Value) {
+        StartRaid(currentRaidMap, currentRaidAct)
+    } else {
+        StartRaidNoUI(currentRaidMap, currentRaidAct)
+    }
     ; Handle play mode selection
     if (MatchMaking.Value) {
         FindMatch()
@@ -352,11 +360,11 @@ MonitorEndScreen() {
                 AddToLog("Handling Raid end")
                 if (ReturnLobbyBox.Value) {
                     AddToLog("Return to lobby")
-                    ClickUntilGone(0, 0, 80, 85, 739, 224, ReturnToLobbyText, 0, -35)
+                    ClickUntilGone(0, 0, 476, 442, 595, 473, ReturnToLobbyText, 0, -35)
                     return CheckLobby()
                 } else {
                     AddToLog("Replay raid")
-                    ClickUntilGone(0, 0, 80, 85, 739, 224, ReturnToLobbyText, -120, 0)
+                    ClickUntilGone(0, 0, 476, 442, 595, 473, ReturnToLobbyText, -150, -35)
                     return RestartStage(true)
                 }
             }
@@ -364,11 +372,11 @@ MonitorEndScreen() {
                 AddToLog("Handling end case")
                 if (ReturnLobbyBox.Value) {
                     AddToLog("Return to lobby enabled")
-                    ClickUntilGone(0, 0, 80, 85, 739, 224, ReturnToLobbyText, 0, -35)
+                    ClickUntilGone(0, 0, 476, 442, 595, 473, ReturnToLobbyText, 0, -35)
                     return CheckLobby()
                 } else {
                     AddToLog("Replaying")
-                    ClickUntilGone(0, 0, 80, 85, 739, 224, ReturnToLobbyText, +120, -35)
+                    ClickUntilGone(0, 0, 476, 442, 595, 473, ReturnToLobbyText, -150, -35)
                     return RestartStage(true)
                 }
             }
@@ -570,6 +578,32 @@ StartStory(map, StoryActDropdown) {
     }
 }
 
+StartStoryNoUI(map, StoryActDropdown) {
+    FixClick(640, 70) ; Close Leaderboard
+    Sleep(500)
+    if (mode = "Story" && StoryActDropdown = "Infinity") {
+        FixClick(284,433)
+        Sleep 200
+    }
+    storyClickCoords := GetStoryClickCoords(map) ; Coords for Story Map
+    FixClick(storyClickCoords.x, storyClickCoords.y) ; Choose Story
+    Sleep 500
+    actClickCoords := GetStoryActClickCoords(StoryActDropdown) ; Coords for Story Act
+    FixClick(actClickCoords.x, actClickCoords.y) ; Choose Story Act
+    Sleep 500
+}
+
+StartRaidNoUI(map, RaidActDropdown) {
+    FixClick(640, 70) ; Close Leaderboard
+    Sleep(500)
+    raidClickCoords := GetRaidClickCoords(map) ; Coords for Raid Map
+    FixClick(raidClickCoords.x, raidClickCoords.y) ; Choose Raid
+    Sleep 500
+    actClickCoords := GetRaidActClickCoords(RaidActDropdown) ; Coords for Raid
+    FixClick(actClickCoords.x, actClickCoords.y) ; Choose Raid Act
+    Sleep 500
+}
+
 StartChallenge() {
     FixClick(640, 70)
     Sleep(500)
@@ -655,6 +689,39 @@ FindMatch() {
 GetStoryDownArrows(map) {
     switch map {
         case "Planet Greenie": return 0
+    }
+}
+
+GetStoryClickCoords(map) {
+    switch map {
+        case "Large Village": return { x: 235, y: 240 }
+        case "Hollow Land": return { x: 235, y: 295 }
+    }
+}
+
+GetStoryActClickCoords(StoryActDropdown) {
+    switch StoryActDropdown {
+        case "Act 1": return { x: 380, y: 230 }
+        case "Act 2": return { x: 380, y: 260 }
+        case "Act 3": return { x: 380, y: 290 }
+        case "Act 4": return { x: 380, y: 320 }
+        case "Act 5": return { x: 380, y: 350 }
+        case "Act 6": return { x: 380, y: 380 }
+        case "Infinity": return { x: 380, y: 405 }
+    }
+}
+
+GetRaidClickCoords(map) {
+    switch map {
+        case "Lawless City": return { x: 235, y: 240 }
+        case "Temple": return { x: 235, y: 295 }
+        case "Orc Castle": return { x: 235, y: 350 }
+    }
+}
+
+GetRaidActClickCoords(StoryActDropdown) {
+    switch StoryActDropdown {
+        case "Act 1": return { x: 380, y: 230 }
     }
 }
 
@@ -748,7 +815,7 @@ BasicSetup(replay := false) {
         CloseChat()
         Sleep 1500
     }
-    Sleep 2500 ; Added cause sometimes double loading screen
+    Sleep 3500 ; Added cause sometimes double loading screen
     CheckForFastWaves()
     Sleep 1500
     if (!replay) {
@@ -766,7 +833,7 @@ DetectMap() {
     Loop {
         ; Check if we waited more than 5 minute for votestart
         if (A_TickCount - startTime > 300000) {
-            if (ok := FindText(&X, &Y, 746, 514, 789, 530, 0, 0, AreaText)) {
+            if (ok := FindText(&X, &Y, 1, 264, 53, 304, 0, 0, AreaText)) {
                 AddToLog("Found in lobby - restarting selected mode")
                 return StartSelectedMode()
             }
@@ -893,7 +960,7 @@ Reconnect() {
             Sleep(5000)
             
             ; Check if we're back in lobby
-            if (ok := FindText(&X, &Y, 746, 514, 789, 530, 0, 0, AreaText)) {
+            if (ok := FindText(&X, &Y, 1, 264, 53, 304, 0, 0, AreaText)) {
                 AddToLog("Reconnected Successfully!")
                 return StartSelectedMode() ; Return to raids
             }
@@ -911,7 +978,7 @@ PlaceUnit(x, y, slot := 1) {
     FixClick(x, y)
     Sleep 50
     SendInput("q")
-    sleep 200 ; Added To Help with Lag
+    Sleep 500
     FixClick(x, y)
     Sleep 50
     if UnitPlaced() {
@@ -942,7 +1009,7 @@ UnitPlaced() {
 }
 
 CheckAbility() {
-    global AutoAbilityBox  ; Reference your checkbox
+    /*global AutoAbilityBox  ; Reference your checkbox
     
     ; Only check ability if checkbox is checked
     if (AutoAbilityBox.Value) {
@@ -950,7 +1017,7 @@ CheckAbility() {
             FixClick(373, 237)  ; Turn ability on
             AddToLog("Auto Ability Enabled")
         }
-    }
+    }*/
 }
 
 UpgradeUnit(x, y) {
@@ -963,7 +1030,7 @@ UpgradeUnit(x, y) {
 CheckLobby() {
     loop {
         Sleep 1000
-        if (ok := FindText(&X, &Y, 746, 514, 789, 530, 0, 0, AreaText)) {
+        if (ok := FindText(&X, &Y, 1, 264, 53, 304, 0, 0, AreaText)) {
             break
         }
         Reconnect()
@@ -977,7 +1044,7 @@ CheckLoaded() {
         Sleep(1000)
     
         ; Check for enemies alive
-        if (ok := FindText(&X, &Y, 681, 381, 778, 434, 0, 0, ModifierCard)) {
+        if (ok := FindText(&X, &Y, 734, 384, 794, 417, 0, 0, ModifierCard)) {
             AddToLog("Successfully Loaded In")
             Sleep(1000)
             break
@@ -1053,7 +1120,13 @@ CheckForVoteScreen() {
 
 CheckForFastWaves() {
     if (ok:=FindText(&X, &Y, 187, 184, 641, 441, 0, 0, FastWave)) {
+        Sleep 200
         FindText().Click(X, Y, "L")
+        Sleep 200
+        FindText().Click(X, Y-20, "L")
+        Sleep 200
+        FindText().Click(X, Y+20, "L")
+        Sleep 200
         return true
     }
     return false

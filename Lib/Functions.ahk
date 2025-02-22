@@ -126,7 +126,7 @@ OnConfirmClick(*) {
         ReturnLobbyBox.Visible := false
     }
 
-    AddToLog("Don't forget to enable Click to Move! (I forget sometimes too!)")
+    AddToLog("Don't forget to enable Click to Move and UI Navigation!")
 
     ; Hide all controls if validation passes
     ModeDropdown.Visible := false

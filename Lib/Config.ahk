@@ -18,7 +18,7 @@ readInSettings() {
     global placement1, placement2, placement3, placement4, placement5, placement6
     global priority1, priority2, priority3, priority4, priority5, priority6
     global mode
-    global PlacementPatternDropdown, PlaceSpeed, MatchMaking
+    global PlacementPatternDropdown, PlaceSpeed, MatchMaking, ReturnLobbyBox, UINavToggle
 
     try {
         settingsFile := setupFilePath()
@@ -58,6 +58,8 @@ readInSettings() {
                 case "Speed": PlaceSpeed.Value := parts[2] ; Set the dropdown value
                 case "Logic": PlacementPatternDropdown.Value := parts[2] ; Set the dropdown value
                 case "Matchmake": MatchMaking.Value := parts[2] ; Set the checkbox value
+                case "Lobby": ReturnLobbyBox.Value := parts[2] ; Set the checkbox value
+                case "Navigate": UINavToggle.Value := parts[2] ; Set the checkbox value
             }
         }
         AddToLog("Configuration settings loaded successfully")
@@ -70,7 +72,7 @@ SaveSettings(*) {
     global placement1, placement2, placement3, placement4, placement5, placement6
     global priority1, priority2, priority3, priority4, priority5, priority6
     global mode
-    global PlacementPatternDropdown, PlaceSpeed, MatchMaking
+    global PlacementPatternDropdown, PlaceSpeed, MatchMaking, ReturnLobbyBox, UINavToggle
 
     try {
         settingsFile := A_ScriptDir "\Settings\Configuration.txt"
@@ -116,6 +118,12 @@ SaveSettings(*) {
 
         content .= "`n`n[Matchmaking]"
         content .= "`nMatchmake=" MatchMaking.Value "`n"
+
+        content .= "`n`n[ReturnToLobby]"
+        content .= "`nLobby=" ReturnLobbyBox.Value "`n"
+
+        content .= "`n`n[UINavigation]"
+        content .= "`nNavigate=" UINavToggle.Value "`n"
         
         FileAppend(content, settingsFile)
         AddToLog("Configuration settings saved successfully")
@@ -148,6 +156,16 @@ LoadSettings() {
             else if (InStr(section, "Matchmaking")) {
                 if RegExMatch(line, "Matchmake=(\w+)", &match) {
                     MatchMaking.Value := match.1 ; Set the dropdown value
+                }
+            }
+            else if (InStr(section, "ReturnToLobby")) {
+                if RegExMatch(line, "Lobby=(\w+)", &match) {
+                    ReturnLobbyBox.Value := match.1 ; Set the dropdown value
+                }
+            }
+            else if (InStr(section, "UINavigation")) {
+                if RegExMatch(line, "Navigate=(\w+)", &match) {
+                    UINavToggle.Value := match.1 ; Set the dropdown value
                 }
             }
             else if (InStr(section, "Index=")) {
