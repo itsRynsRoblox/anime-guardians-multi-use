@@ -602,6 +602,9 @@ StartStoryNoUI(map, StoryActDropdown) {
     Sleep 500
     actClickCoords := GetStoryActClickCoords(StoryActDropdown) ; Coords for Story Act
     FixClick(actClickCoords.x, actClickCoords.y) ; Choose Story Act
+    if (StoryActDropdown = "Infinity") {
+        FixClick(actClickCoords.x, actClickCoords.y) ; Choose Story Act again
+    }
     Sleep 500
 }
 
@@ -700,7 +703,10 @@ FindMatch() {
 
 GetStoryDownArrows(map) {
     switch map {
-        case "Planet Greenie": return 0
+        case "Large Village": return 0
+        case "Hollow Land": return 1
+        case "Monster City": return 2
+        case "Academy Demon": return 3
     }
 }
 
@@ -708,6 +714,8 @@ GetStoryClickCoords(map) {
     switch map {
         case "Large Village": return { x: 235, y: 240 }
         case "Hollow Land": return { x: 235, y: 295 }
+        case "Monster City": return { x: 235, y: 350 }
+        case "Academy Demon": return { x: 235, y: 400 }
     }
 }
 
@@ -753,6 +761,7 @@ GetRaidDownArrows(map) {
     switch map {
         case "Lawless City": return 0
         case "Temple": return 1
+        case "Orc Castle": return 2
     }
 }
 
@@ -827,7 +836,10 @@ BasicSetup(replay := false) {
         CloseChat()
         Sleep 1500
     }
-    Sleep 3500 ; Added cause sometimes double loading screen
+
+    ; Wait for the loading screen to disappear instead of a fixed sleep
+    WaitForLoadingScreen()
+
     CheckForFastWaves()
     Sleep 1500
     if (!replay) {
@@ -836,6 +848,23 @@ BasicSetup(replay := false) {
     }
     CheckForVoteScreen()
     Sleep 300
+}
+
+WaitForLoadingScreen() {
+    startTime := A_TickCount
+    maxWait := 10000 ; Maximum wait time (10 seconds) to prevent infinite loop
+
+    while (IsLoadingScreenVisible()) {
+        Sleep 100 ; Check every 100ms
+        if (A_TickCount - startTime > maxWait)
+            break
+    }
+}
+
+IsLoadingScreenVisible() {
+    ; Replace this with an actual check for the loading screen
+    ; Example: checking for a specific pixel color, image, or UI element
+    return FindText(&X, &Y, 6, 586, 205, 620, 0, 0 LoadingScreen) ; Adjust as needed
 }
 
 DetectMap() {
@@ -853,11 +882,6 @@ DetectMap() {
             return "no map found"
         }
 
-        if (ModeDropdown.Text = "Story") {
-            AddToLog("Map detected: " StoryDropdown.Text)
-            return StoryDropdown.Text
-        }
-
         if (ModeDropdown.Text = "Raid") {
             AddToLog("Map detected: " RaidDropdown.Text)
             return RaidDropdown.Text
@@ -866,6 +890,21 @@ DetectMap() {
         if (ModeDropdown.Text = "Valentine's Event") {
             AddToLog("Map detected: " ModeDropdown.Text)
             return ModeDropdown.Text
+        }
+
+        mapPatterns := Map(
+            "Large Village", LargeVillage,
+            "Hollow Land", HollowLand,
+            "Monster City", MonsterCity,
+            "Academy Demon", AcademyDemon
+
+        )
+
+        for mapName, pattern in mapPatterns {
+            if (ok := FindText(&X, &Y, 14, 494, 329, 552, 0, 0, pattern)) {
+                AddToLog("Detected map: " mapName)
+                return mapName
+            }
         }
 
         ; Check for Modifier Cards
@@ -885,12 +924,18 @@ HandleMapMovement(MapName) {
     switch MapName {
         case "Large Village":
             MoveForLargeVillage()
+        case "Hollow Land":
+            MoveForHollowLand()   
         case "Monster City":
-            MoveForMonsterCity()    
+            MoveForMonsterCity()
+        case "Academy Demon":
+            MoveForAcademyDemon()       
         case "Lawless City":
             MoveForLawlessCity()    
         case "Temple":
             MoveForTemple()
+        case "Orc Castle":
+            MoveForOrcCastle()    
     }
 }
 
@@ -899,8 +944,22 @@ MoveForLargeVillage() {
     Sleep (6000)
 }
 
+MoveForHollowLand() {
+
+}
+
+MoveForOrcCastle() {
+    FixClick(400, 7, "Right")
+    Sleep (5500)
+}
+
 MoveForMonsterCity() {
-    Fixclick(515 366, "Right")
+    Fixclick(515, 366, "Right")
+    Sleep (3500)
+}
+
+MoveForAcademyDemon() {
+    FixClick(452, 414, "Right")
     Sleep (3500)
 }
 
@@ -1000,6 +1059,12 @@ PlaceUnit(x, y, slot := 1) {
     return false
 }
 
+ClickUnit(x, y) {
+    FixClick(x, y)
+    Sleep 50
+    return UnitPlaced()
+}
+
 MaxUpgrade() {
     Sleep 500
     ; Check for max text
@@ -1010,14 +1075,23 @@ MaxUpgrade() {
 }
 
 UnitPlaced() {
-    PlacementSpeed() ; Custom Placement Speed
-    ; Check for upgrade text
-    if (ok:=FindText(&X, &Y, 118, 246, 241, 273, 0, 0, UpgradeText)) {
+    if (WaitForUpgradeText(PlacementSpeed())) { ; Wait up to 3.5 seconds for the upgrade text to appear
         AddToLog("Unit Placed Successfully")
-        FixClick(325, 185) ; close upg menu
+        FixClick(325, 185) ; Close upgrade menu
         return true
     }
     return false
+}
+
+WaitForUpgradeText(timeout := 5000) {
+    startTime := A_TickCount
+    while (A_TickCount - startTime < timeout) {
+        if (FindText(&X, &Y, 118, 246, 241, 273, 0, 0, UpgradeText)) {
+            return true
+        }
+        Sleep 100  ; Check every 100ms
+    }
+    return false  ; Timed out, upgrade text was not found
 }
 
 CheckAbility() {
