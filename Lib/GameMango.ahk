@@ -397,39 +397,51 @@ MonitorStage() {
         
         if (mode = "Story" && StoryActDropdown.Text = "Infinity") {
             timeElapsed := A_TickCount - lastClickTime
-            if (timeElapsed >= 5000) {  ; 5 seconds
-                ;AddToLog("Performing anti-AFK click")
+            if (timeElapsed >= 15000) {  ; 15 seconds
                 FixClick(300, 400)  ; Move click
                 lastClickTime := A_TickCount
             }
         }
-        ; Check for Results screen
-        if CheckForResults() {
-            AddToLog("Checking win/loss status")
-            
-            ; Calculate stage end time here, before checking win/loss
-            stageEndTime := A_TickCount
-            stageLength := FormatStageTime(stageEndTime - stageStartTime)
 
-            if (ok := FindText(&X, &Y, 300, 190, 360, 250, 0, 0, UnitExit)) {
-                ClickUntilGone(0, 0, 300, 190, 360, 250, UnitExit, -4, -35)
-            } 
-            
-            ; Check for Victory or Defeat
-            if (ok := FindText(&X, &Y, 253, 209, 380, 237, 0, 0, VictoryText)) {
-                AddToLog("Victory detected - Stage Length: " stageLength)
-                Wins += 1
-                SendWebhookWithTime(true, stageLength)
-                return MonitorEndScreen()  ; Original behavior for other modes
-            }
-            else if (ok := FindText(&X, &Y, 260, 206, 372, 240, 0, 0, DefeatText)) {
-                AddToLog("Defeat detected - Stage Length: " stageLength)
-                loss += 1
-                SendWebhookWithTime(false, stageLength) 
-                return MonitorEndScreen()  ; Original behavior for other modes
-            }
+        ; Click through drops until results screen appears
+        if !CheckForBaseHealth() {
+            ClickThroughDrops()
+            continue
         }
+
+        AddToLog("Checking win/loss status")
+        stageEndTime := A_TickCount
+        stageLength := FormatStageTime(stageEndTime - stageStartTime)
+
+        if (ok := FindText(&X, &Y, 300, 190, 360, 250, 0, 0, UnitExit)) {
+            ClickUntilGone(0, 0, 300, 190, 360, 250, UnitExit, -4, -35)
+        }
+
+        if (ok := FindText(&X, &Y, 253, 209, 380, 237, 0, 0, VictoryText)) {
+            AddToLog("Victory detected - Stage Length: " stageLength)
+            Wins += 1
+            SendWebhookWithTime(true, stageLength)
+            return MonitorEndScreen()
+        }
+        else if (ok := FindText(&X, &Y, 260, 206, 372, 240, 0, 0, DefeatText)) {
+            AddToLog("Defeat detected - Stage Length: " stageLength)
+            loss += 1
+            SendWebhookWithTime(false, stageLength)
+            return MonitorEndScreen()
+        }
+
         Reconnect()
+    }
+}
+
+ClickThroughDrops() {
+    AddToLog("Clicking through item drops...")
+    Loop 10 {
+        FixClick(400, 495)
+        Sleep(500)
+        if CheckForResults() {
+            return
+        }
     }
 }
 

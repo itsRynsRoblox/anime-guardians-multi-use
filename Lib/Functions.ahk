@@ -218,6 +218,20 @@ FindAndClickText(textToFind, searchArea := [0, 0, GetWindowCenter(rblxID).Width,
     }
 }
 
+CheckForBaseHealth() {
+    searchArea := [254, 45, 295, 8]
+    ; Extract the search area boundaries
+    x1 := searchArea[1], y1 := searchArea[2], x2 := searchArea[3], y2 := searchArea[4]
+
+    ; Perform the pixel search
+    if (PixelSearch(&foundX, &foundY, x1, y1, x2, y2, 0x55FE7F, 2)) {
+        Sleep (100)
+        return true
+    }
+
+    return false
+}
+
 OpenGithub() {
     Run("https://github.com/itsRynsRoblox?tab=repositories")
 }
