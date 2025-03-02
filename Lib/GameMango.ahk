@@ -1075,7 +1075,7 @@ MaxUpgrade() {
 }
 
 UnitPlaced() {
-    if (WaitForUpgradeText(PlacementSpeed())) { ; Wait up to 3.5 seconds for the upgrade text to appear
+    if (WaitForUpgradeText(4500)) { ; Wait up to 4.5 seconds for the upgrade text to appear
         AddToLog("Unit Placed Successfully")
         FixClick(325, 185) ; Close upgrade menu
         return true
@@ -1083,7 +1083,7 @@ UnitPlaced() {
     return false
 }
 
-WaitForUpgradeText(timeout := 5000) {
+WaitForUpgradeText(timeout := 4500) {
     startTime := A_TickCount
     while (A_TickCount - startTime < timeout) {
         if (FindText(&X, &Y, 118, 246, 241, 273, 0, 0, UpgradeText)) {

@@ -38,4 +38,4 @@ Lobby=0
 
 
 [UINavigation]
-Navigate=1
+Navigate=0
