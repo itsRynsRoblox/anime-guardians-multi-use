@@ -381,6 +381,14 @@ MonitorEndScreen() {
                 }
             }
         }
+
+        
+        if (ok:=FindText(&X, &Y, 412, 441, 538, 475, 0, 0, ChallengeReturnToLobbyText)) {
+            AddToLog("Return to lobby for challenge")
+            ClickUntilGone(0, 0, 412, 441, 538, 475, ChallengeReturnToLobbyText, 0, -35)
+            return CheckLobby()
+
+        }
         
         Reconnect()
     }
