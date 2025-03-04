@@ -4,6 +4,7 @@ global macroStartTime := A_TickCount
 global stageStartTime := A_TickCount
 
 LoadKeybindSettings()  ; Load saved keybinds
+CheckForUpdates()
 Hotkey(F1Key, (*) => moveRobloxWindow())
 Hotkey(F2Key, (*) => StartMacro())
 Hotkey(F3Key, (*) => Reload())
@@ -49,7 +50,7 @@ PlacingUnits() {
         return MonitorStage()
     }
 
-    placementPoints := PlacementPatternDropdown.Text = "Circle" ? GenerateCirclePoints() : PlacementPatternDropdown.Text = "Grid" ? GenerateGridPoints() : PlacementPatternDropdown.Text = "Spiral" ? GenerateSpiralPoints() : PlacementPatternDropdown.Text = "Up and Down" ? GenerateUpandDownPoints() : GenerateRandomPoints()
+    placementPoints := PlacementPatternDropdown.Text = "Custom" ? GenerateCustomPoints() : PlacementPatternDropdown.Text = "Circle" ? GenerateCirclePoints() : PlacementPatternDropdown.Text = "Grid" ? GenerateGridPoints() : PlacementPatternDropdown.Text = "Spiral" ? GenerateSpiralPoints() : PlacementPatternDropdown.Text = "Up and Down" ? GenerateUpandDownPoints() : GenerateRandomPoints()
     
     ; Go through each slot
     for slotNum in [1, 2, 3, 4, 5, 6] {
@@ -326,6 +327,28 @@ RaidMode() {
     RestartStage(false)
 }
 
+CustomMode() {
+    AddToLog("Starting Custom Mode")
+    RestartCustomStage()
+}
+
+RestartCustomStage() {
+    ; Wait for loading
+    CheckLoaded()
+
+    ; Check for wave selection and select fast waves
+    CheckForFastWaves()
+
+    ; Check for vote screen and press start
+    CheckForVoteScreen()
+
+    ; Begin unit placement and management
+    PlacingUnits()
+    
+    ; Monitor stage progress
+    MonitorStage()
+}
+
 MonitorEndScreen() {
     global mode, StoryDropdown, StoryActDropdown, ReturnLobbyBox, MatchMaking
 
@@ -377,19 +400,19 @@ MonitorEndScreen() {
                 } else {
                     AddToLog("Replaying")
                     ClickUntilGone(0, 0, 476, 442, 595, 473, ReturnToLobbyText, -150, -35)
+                    if (ModeDropdown.Text = "Custom") {
+                        return RestartCustomStage
+                    }
                     return RestartStage(true)
                 }
             }
         }
-
-        
         if (ok:=FindText(&X, &Y, 412, 441, 538, 475, 0, 0, ChallengeReturnToLobbyText)) {
             AddToLog("Return to lobby for challenge")
             ClickUntilGone(0, 0, 412, 441, 538, 475, ChallengeReturnToLobbyText, 0, -35)
             return CheckLobby()
 
         }
-        
         Reconnect()
     }
 }
@@ -411,10 +434,20 @@ MonitorStage() {
             }
         }
 
-        ; Click through drops until results screen appears
+        if CheckForBaseHealth() {
+            timeElapsed := A_TickCount - lastClickTime
+            if (timeElapsed >= 60000) {  ; every 1 minute
+                FixClick(300, 400)  ; Move click
+                lastClickTime := A_TickCount
+            }
+        }
+
+        ; Click through drops until results screen or base health is found
         if !CheckForBaseHealth() {
-            ClickThroughDrops()
-            continue
+            while !CheckForBaseHealth() && !CheckForResults() {
+                ClickThroughDrops()
+                Sleep (100)  ; Small delay to prevent high CPU usage while clicking
+            }
         }
 
         AddToLog("Checking win/loss status")
@@ -1172,6 +1205,9 @@ StartSelectedMode() {
     else if (ModeDropdown.Text = "Valentine's Event") {
         ValentineMode()
     }
+    else if (ModeDropdown.Text = "Custom") {
+        CustomMode()
+    }
 }
 
 FormatStageTime(ms) {
@@ -1224,6 +1260,18 @@ CheckForFastWaves() {
         return true
     }
     return false
+}
+
+GenerateCustomPoints() {
+    global savedCoords  ; Access the global saved coordinates
+    points := []
+
+    ; Directly use savedCoords without generating new points
+    for coord in savedCoords {
+        points.Push({x: coord.x, y: coord.y})
+    }
+
+    return points
 }
 
 GenerateRandomPoints() {

@@ -2,10 +2,15 @@
 #SingleInstance Force
 #Include Image.ahk
 #Include Functions.ahk
+#Include UpdateChecker.ahk
 
+;Update Checker
+global repoOwner := "itsRynsRoblox"
+global repoName := "anime-guardians-multi-use"
+global currentVersion := "1.5"
 ; Basic Application Info
 global aaTitle := "Ryn's Anime Guardians Macro "
-global version := "v1.4.2"
+global version := "v" . currentVersion
 global rblxID := "ahk_exe RobloxPlayerBeta.exe"
 ;Coordinate and Positioning Variables
 global targetWidth := 816
@@ -31,6 +36,9 @@ global loss := 0
 global mode := ""
 global StartTime := A_TickCount
 global currentTime := GetCurrentTime()
+;Custom Unit Placement
+global waitingForClick := false
+global savedCoords := []  ; Initialize an empty array to hold the coordinates
 ;Gui creation
 global uiBorders := []
 global uiBackgrounds := []
@@ -221,7 +229,7 @@ global ReturnLobbyBox := aaMainUI.Add("Checkbox", "x1015 y451 cffffff Checked", 
 global UINavToggle := aaMainUI.Add("CheckBox", "x900 y476 cffffff Checked", "UI Navigation")
 global PriorityUpgrade := aaMainUI.Add("CheckBox", "x1015 y476 cffffff", "Priority Upgrade")
 PlacementPatternText := aaMainUI.Add("Text", "x1032 y390 w115 h20", "Placement Type")
-global PlacementPatternDropdown := aaMainUI.Add("DropDownList", "x1035 y410 w100 h180 Choose2 +Center", ["Circle", "Grid", "Random"])
+global PlacementPatternDropdown := aaMainUI.Add("DropDownList", "x1035 y410 w100 h180 Choose2 +Center", ["Circle", "Grid", "Random", "Custom"])
 PlaceSpeedText := aaMainUI.Add("Text", "x1193 y390 w115 h20", "Placement Speed")
 global PlaceSpeed := aaMainUI.Add("DropDownList", "x1205 y410 w100 h180 Choose1 +Center", ["Super Fast (1s)", "Fast (1.5s)", "Default (2s)", "Slow (2.5s)", "Very Slow (3s)", "Toaster (4s)"])
 ;PlaceSpeed.OnEvent('Change', (*) => changePlacementSpeed())
@@ -229,6 +237,14 @@ global PlaceSpeed := aaMainUI.Add("DropDownList", "x1205 y410 w100 h180 Choose1 
 PlacementSelectionText := aaMainUI.Add("Text", "x857 y390 w130 h20", "Placement Settings")
 PlacementSelection := aaMainUI.Add("DropDownList", "x865 y410 w100 h180 Choose1 +Center", ["Normal"])
 placementSaveText := aaMainUI.Add("Text", "x807 y451 w80 h20", "Save Config")
+
+customPlacementText := aaMainUI.Add("Text", "x200 y642 w120 h20 +Left", "Set Placements")
+customPlacementButton := aaMainUI.Add("Button", "x210 y662 w80 h20", "Set")
+customPlacementButton.OnEvent("Click", (*) => StartClickCapture())
+
+customPlacementClearText := aaMainUI.Add("Text", "x345 y642 w120 h20 +Left", "Clear Placements")
+customPlacementClearButton := aaMainUI.Add("Button", "x360 y662 w80 h20", "Clear")
+customPlacementClearButton.OnEvent("Click", (*) => DeleteSavedCoords())
 
 Hotkeytext := aaMainUI.Add("Text", "x807 y35 w530 h30", "To change keybinds click top right settings, Below are default hotkey settings ")
 Hotkeytext2 := aaMainUI.Add("Text", "x807 y50 w530 h30", "F1:Reposition roblox window|F2:Start Macro|F3:Stop Macro|F4:Pause Macro")
@@ -242,7 +258,7 @@ DiscordButton.OnEvent("Click", (*) => OpenDiscord())
 ;--------------MODE SELECT;--------------MODE SELECT;--------------MODE SELECT;--------------MODE SELECT;--------------MODE SELECT;--------------MODE SELECT
 global modeSelectionGroup := aaMainUI.Add("GroupBox", "x808 y38 w500 h45 Background" uiTheme[2], "Mode Select")
 aaMainUI.SetFont("s10 c" uiTheme[6])
-global ModeDropdown := aaMainUI.Add("DropDownList", "x818 y53 w140 h180 Choose0 +Center", ["Story", "Raid", "Challenge", "Valentine's Event"])
+global ModeDropdown := aaMainUI.Add("DropDownList", "x818 y53 w140 h180 Choose0 +Center", ["Story", "Raid", "Challenge", "Valentine's Event", "Custom"])
 global StoryDropdown := aaMainUI.Add("DropDownList", "x968 y53 w150 h180 Choose0 +Center", ["Large Village", "Hollow Land", "Monster City", "Academy Demon"])
 global StoryActDropdown := aaMainUI.Add("DropDownList", "x1128 y53 w80 h180 Choose0 +Center", ["Act 1", "Act 2", "Act 3", "Act 4", "Act 5", "Act 6", "Infinity"])
 global RaidDropdown := aaMainUI.Add("DropDownList", "x968 y53 w150 h180 Choose0 +Center", ["Lawless City", "Temple", "Orc Castle"])
@@ -484,5 +500,48 @@ checkSizeTimer() {
             AddToLog("Fixing Roblox window size")
             moveRobloxWindow()
         }
+    }
+}
+
+StartClickCapture() {
+    global waitingForClick
+    waitingForClick := true
+    SetTimer UpdateTooltip, 50  ; Update tooltip position every 50ms
+}
+
+UpdateTooltip() {
+    global waitingForClick
+    if waitingForClick {
+        MouseGetPos &x, &y
+        ToolTip "Press shift anywhere to save coordinates...", x + 10, y + 10  ; Offset tooltip slightly
+    } else {
+        ToolTip()  ; Hide tooltip when not waiting
+        SetTimer UpdateTooltip, 0  ; Stop the timer
+    }
+}
+
+~LShift:: 
+{
+    global waitingForClick, savedCoords  
+    if waitingForClick {
+        MouseGetPos &x, &y
+        waitingForClick := false
+        if !IsSet(savedCoords)  ; Ensure savedCoords is initialized
+            savedCoords := []
+        savedCoords.Push({x: x, y: y})  ; Store as an object
+        ToolTip "Coordinates added: " x ", " y, x + 10, y + 10  ; Show tooltip at mouse position
+        AddToLog("📌 Saved Coordinates → X: " x ", Y: " y)
+        SetTimer () => ToolTip(), -2000  ; Hide tooltip after 2 sec
+    }
+}
+
+DeleteSavedCoords() {
+    global savedCoords
+
+    if (IsSet(savedCoords) && savedCoords.Length > 0) {
+        savedCoords := []  ; Clear the saved coordinates list
+        AddToLog("🗑️ All saved coordinates have been cleared.")
+    } else {
+        AddToLog("⚠️ No saved coordinates to clear.")
     }
 }

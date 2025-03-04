@@ -72,6 +72,8 @@ OpenDiscordLink() {
     } else if (selected = "Valentine's Event") {
         MatchMaking.Visible := true
         mode := "Valentine's Event"
+    } else if (selected = "Custom") {
+        mode := "Custom"
     }
 }
 
@@ -116,6 +118,15 @@ OnConfirmClick(*) {
         AddToLog("Selected " RaidDropdown.Text " - " RaidActDropdown.Text)
         ReturnLobbyBox.Visible := true
     }
+    ; For Custom mode, check if coords are empty
+    else if (ModeDropdown.Text = "Custom") {
+        global savedCoords
+        if (!IsSet(savedCoords) || savedCoords.Length = 0) {
+            AddToLog("❌ No saved coordinates! Please capture some points first.")
+            return
+        }
+        AddToLog("Selected Custom")
+    }
     else if (ModeDropdown.Text = "Valentine's Event") {
         AddToLog("Selected " ModeDropdown.Text)
         MatchMaking.Visible := true
@@ -123,7 +134,7 @@ OnConfirmClick(*) {
     } else {
         AddToLog("Selected " ModeDropdown.Text " mode")
         MatchMaking.Visible := false
-        ReturnLobbyBox.Visible := false
+        ReturnLobbyBox.Visible := true
     }
 
     AddToLog("Don't forget to enable Click to Move and UI Navigation!")

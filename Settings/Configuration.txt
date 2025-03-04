@@ -2,11 +2,11 @@ Mode=
 
 
 Enabled1=1
-Enabled2=0
-Enabled3=0
-Enabled4=0
-Enabled5=0
-Enabled6=0
+Enabled2=1
+Enabled3=1
+Enabled4=1
+Enabled5=1
+Enabled6=1
 
 Placement1=1
 Placement2=1
@@ -22,7 +22,7 @@ Priority5=5
 Priority6=6
 
 [PlacementLogic]
-Logic=1
+Logic=4
 
 
 [PlaceSpeed]
@@ -39,3 +39,6 @@ Lobby=0
 
 [UINavigation]
 Navigate=0
+
+[SavedCoordinates]
+NoCoordinatesSaved
