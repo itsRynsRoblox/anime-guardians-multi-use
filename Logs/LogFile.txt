@@ -1,5 +1,0 @@
-
-==Ryn's Anime Guardians Macro v1.5==
-  Start Time: [13h.37m.26s]
-Configuration settings loaded successfully 00:00
-?? Update available! Current: 1.5 ? Latest: 1.4.2 00:01

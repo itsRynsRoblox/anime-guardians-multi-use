@@ -8,7 +8,8 @@ CheckForUpdates()
 Hotkey(F1Key, (*) => moveRobloxWindow())
 Hotkey(F2Key, (*) => StartMacro())
 Hotkey(F3Key, (*) => Reload())
-Hotkey(F4Key, (*) => TogglePause())
+Hotkey(F4Key, (*) => MonitorStage())
+;Hotkey(F4Key, (*) => TogglePause())
 
 
 StartMacro(*) {
@@ -353,70 +354,66 @@ MonitorEndScreen() {
     global mode, StoryDropdown, StoryActDropdown, ReturnLobbyBox, MatchMaking
 
     Loop {
-        Sleep(3000)  
-        
+        Sleep(3000)
         FixClick(560, 560)
         FixClick(560, 560)
 
-        ; Now handle each mode
-        if (ok := FindText(&X, &Y, 476, 442, 595, 473, 0, 0, ReturnToLobbyText)) {
+        if (FindText(&X, &Y, 276, 340, 359, 363, 0, 0, Results)) {
             AddToLog("Found Lobby Text - Current Mode: " mode)
             Sleep(2000)
 
             if (mode = "Story") {
-                AddToLog("Handling Story mode end")
-                if (StoryActDropdown.Text != "Infinity") {
-                    if (NextLevelBox.Value && lastResult = "win") {
-                        AddToLog("Next level")
-                        ClickUntilGone(0, 0, 253, 209, 380, 237, VictoryText, 150, 200)
-                    } else {
-                        AddToLog("Replay level")
-                        ClickUntilGone(0, 0, 260, 206, 372, 240, DefeatText, -4, 200)
-                    }
-                } else {
-                    AddToLog("Story Infinity replay")
-                    ClickUntilGone(0, 0, 260, 206, 372, 240, DefeatText, 50, 200)
-                }
-                return RestartStage(true)
+                HandleStoryMode()
+            } else if (mode = "Raid") {
+                HandleRaidMode()
+            } else {
+                HandleDefaultMode()
             }
-            else if (mode = "Raid") {
-                AddToLog("Handling Raid end")
-                if (ReturnLobbyBox.Value) {
-                    AddToLog("Return to lobby")
-                    ClickUntilGone(0, 0, 476, 442, 595, 473, ReturnToLobbyText, 0, -35)
-                    return CheckLobby()
-                } else {
-                    AddToLog("Replay raid")
-                    ClickUntilGone(0, 0, 476, 442, 595, 473, ReturnToLobbyText, -150, -35)
-                    return RestartStage(true)
-                }
-            }
-            else {
-                AddToLog("Handling end case")
-                if (ReturnLobbyBox.Value) {
-                    AddToLog("Return to lobby enabled")
-                    ClickUntilGone(0, 0, 476, 442, 595, 473, ReturnToLobbyText, 0, -35)
-                    return CheckLobby()
-                } else {
-                    AddToLog("Replaying")
-                    ClickUntilGone(0, 0, 476, 442, 595, 473, ReturnToLobbyText, -150, -35)
-                    if (ModeDropdown.Text = "Custom") {
-                        return RestartCustomStage
-                    }
-                    return RestartStage(true)
-                }
-            }
+            return
         }
-        if (ok:=FindText(&X, &Y, 412, 441, 538, 475, 0, 0, ChallengeReturnToLobbyText)) {
+        
+        if (FindText(&X, &Y, 412, 441, 538, 475, 0, 0, ChallengeReturnToLobbyText)) {
             AddToLog("Return to lobby for challenge")
             ClickUntilGone(0, 0, 412, 441, 538, 475, ChallengeReturnToLobbyText, 0, -35)
             return CheckLobby()
-
         }
+        
         Reconnect()
     }
 }
 
+HandleStoryMode() {
+    AddToLog("Handling Story mode end")
+    if (StoryActDropdown.Text != "Infinity") {
+        ClickUntilGone(0, 0, 140, 437, 659, 493, Retry1, (NextLevelBox.Value && lastResult = "win") ? 100 : 50, -30)
+    } else {
+        AddToLog("Story Infinity replay")
+        ClickUntilGone(0, 0, 140, 437, 659, 493, Retry1, 50, -30)
+    }
+    RestartStage(true)
+}
+
+HandleRaidMode() {
+    AddToLog("Handling Raid end")
+    ClickUntilGone(0, 0, 140, 437, 659, 493, Retry1, ReturnLobbyBox.Value ? 100 : 50, -30)
+    if (ReturnLobbyBox.Value) {
+        return CheckLobby()
+    } else {
+        return RestartStage(true)
+    }
+}
+
+HandleDefaultMode() {
+    AddToLog("Handling end case")
+    ClickUntilGone(0, 0, 140, 437, 659, 493, Retry1, ReturnLobbyBox.Value ? 150 : 50, -30)
+    if (ReturnLobbyBox.Value) {
+         return CheckLobby()
+    }
+    if (ModeDropdown.Text = "Custom") {
+        return RestartCustomStage
+    }
+    return RestartStage(true)
+}
 
 MonitorStage() {
     global Wins, loss, mode, StoryActDropdown
@@ -426,28 +423,16 @@ MonitorStage() {
     Loop {
         Sleep(1000)
         
-        if (mode = "Story" && StoryActDropdown.Text = "Infinity") {
-            timeElapsed := A_TickCount - lastClickTime
-            if (timeElapsed >= 15000) {  ; 15 seconds
-                FixClick(300, 400)  ; Move click
-                lastClickTime := A_TickCount
-            }
+        timeElapsed := A_TickCount - lastClickTime
+        if (timeElapsed >= 15000) {  ; 15 seconds
+            FixClick(300, 400)  ; Move click
+            lastClickTime := A_TickCount
         }
-
-        if CheckForBaseHealth() {
-            timeElapsed := A_TickCount - lastClickTime
-            if (timeElapsed >= 60000) {  ; every 1 minute
-                FixClick(300, 400)  ; Move click
-                lastClickTime := A_TickCount
-            }
-        }
-
-        ; Click through drops until results screen or base health is found
-        if !CheckForBaseHealth() {
-            while !CheckForBaseHealth() && !CheckForResults() {
-                ClickThroughDrops()
-                Sleep (100)  ; Small delay to prevent high CPU usage while clicking
-            }
+        
+        ; Click through drops until results screen appears OR base health is confirmed
+        while !(CheckForResults()) {  
+            ClickThroughDrops()
+            Sleep(100)  ; Small delay to prevent high CPU usage while clicking
         }
 
         AddToLog("Checking win/loss status")
@@ -476,7 +461,10 @@ MonitorStage() {
 }
 
 ClickThroughDrops() {
-    AddToLog("Clicking through item drops...")
+    global debug := false
+    if (debug) {
+        AddToLog("Clicking through item drops...")
+    }
     Loop 10 {
         FixClick(400, 495)
         Sleep(500)
@@ -1055,7 +1043,7 @@ Reconnect() {
             AddToLog("Connecting to private server...")
             Run(psLink)
         } else {
-            Run("roblox://placeID=8304191830")  ; Public server if no PS file or empty
+            Run("roblox://placeID=17282336195")  ; Public server if no PS file or empty
         }
 
         Sleep(300000)
@@ -1191,8 +1179,10 @@ StartedGame() {
 }
 
 StartSelectedMode() {
-    FixClick(400,340)
-    FixClick(400,390)
+    if (!ModeDropdown.Text = "Custom") {
+        FixClick(400,340)
+        FixClick(400,390)
+    }
     if (ModeDropdown.Text = "Story") {
         StoryMode()
     }

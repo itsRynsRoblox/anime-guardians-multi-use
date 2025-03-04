@@ -7,7 +7,7 @@
 ;Update Checker
 global repoOwner := "itsRynsRoblox"
 global repoName := "anime-guardians-multi-use"
-global currentVersion := "1.5"
+global currentVersion := "1.5.1"
 ; Basic Application Info
 global aaTitle := "Ryn's Anime Guardians Macro "
 global version := "v" . currentVersion
