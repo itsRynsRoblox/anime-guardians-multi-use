@@ -1,0 +1,76 @@
+
+==Ryn's Anime Guardians Macro v1.5.1==
+  Start Time: [12h.46m.05s]
+Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.5.1==
+  Start Time: [12h.46m.38s]
+Configuration settings loaded successfully 00:00
+You are using the latest version. 00:01
+? Configuration settings and custom placements saved successfully! 00:21
+Selected Academy Demon - Infinity 00:22
+Don't forget to enable Click to Move and UI Navigation! 00:22
+Moving to position for Academy Demon 00:22
+Starting Academy Demon - Infinity 00:31
+
+==Ryn's Anime Guardians Macro v1.5.1==
+  Start Time: [12h.47m.21s]
+Configuration settings loaded successfully 00:00
+You are using the latest version. 00:01
+Selected Academy Demon - Infinity 00:22
+Don't forget to enable Click to Move and UI Navigation! 00:22
+Moving to position for Academy Demon 00:25
+Starting Academy Demon - Infinity 00:34
+
+==Ryn's Anime Guardians Macro v1.5.1==
+  Start Time: [12h.48m.07s]
+Configuration settings loaded successfully 00:00
+You are using the latest version. 00:01
+
+==Ryn's Anime Guardians Macro v1.5.1==
+  Start Time: [18h.10m.11s]
+Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.5.1==
+  Start Time: [18h.17m.30s]
+Configuration settings loaded successfully 00:00
+You are using the latest version. 00:01
+Selected Large Village - Infinity 01:19
+Don't forget to enable Click to Move and UI Navigation! 01:19
+Checking win/loss status 02:49
+Defeat detected - Stage Length: 00:02:49 02:49
+No webhook configured - skipping webhook 02:50
+Found Lobby Text - Current Mode: Story 02:53
+Handling Story mode end 02:55
+Story Infinity replay 02:55
+Determining Movement Necessity on Map... 02:56
+
+==Ryn's Anime Guardians Macro v1.5.1==
+  Start Time: [18h.20m.29s]
+Configuration settings loaded successfully 00:00
+You are using the latest version. 00:01
+
+==Ryn's Anime Guardians Macro v1.5.1==
+  Start Time: [20h.47m.51s]
+Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.5.1==
+  Start Time: [20h.48m.17s]
+Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.5.1==
+  Start Time: [20h.52m.01s]
+Configuration settings loaded successfully 00:00
+? Configuration settings and custom placements saved successfully! 00:03
+?? No saved coordinates to clear. 00:05
+?? Saved Coordinates ? X: 699, Y: 514 00:12
+? Configuration settings and custom placements saved successfully! 00:13
+
+==Ryn's Anime Guardians Macro v1.5.1==
+  Start Time: [20h.52m.18s]
+Configuration settings loaded successfully 00:00
+?? No saved coordinates to clear. 00:01
+
+==Ryn's Anime Guardians Macro v1.6==
+  Start Time: [20h.53m.06s]
+Configuration settings loaded successfully 00:00

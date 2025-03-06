@@ -18,7 +18,8 @@ readInSettings() {
     global placement1, placement2, placement3, placement4, placement5, placement6
     global priority1, priority2, priority3, priority4, priority5, priority6
     global mode
-    global PlacementPatternDropdown, PlaceSpeed, MatchMaking, ReturnLobbyBox, UINavToggle
+    global PlacementPatternDropdown, PlaceSpeed, MatchMaking, ReturnLobbyBox, UINavToggle, PriorityUpgrade, UpgradeDuringPlacementBox
+    global savedCoords
 
     try {
         settingsFile := setupFilePath()
@@ -86,6 +87,8 @@ readInSettings() {
                 case "Matchmake": MatchMaking.Value := parts[2] ; Set the checkbox value
                 case "Lobby": ReturnLobbyBox.Value := parts[2] ; Set the checkbox value
                 case "Navigate": UINavToggle.Value := parts[2] ; Set the checkbox value
+                case "Upgrade": PriorityUpgrade.Value := parts[2] ; Set the checkbox value
+                case "AttemptUpgrade": UpgradeDuringPlacementBox.Value := parts[2] ; Set the checkbox value
 
 
             }
@@ -100,7 +103,7 @@ SaveSettings(*) {
     global placement1, placement2, placement3, placement4, placement5, placement6
     global priority1, priority2, priority3, priority4, priority5, priority6
     global mode
-    global PlacementPatternDropdown, PlaceSpeed, MatchMaking, ReturnLobbyBox, UINavToggle
+    global PlacementPatternDropdown, PlaceSpeed, MatchMaking, ReturnLobbyBox, UINavToggle, PriorityUpgrade, UpgradeDuringPlacementBox
     global savedCoords
 
     try {
@@ -153,6 +156,12 @@ SaveSettings(*) {
 
         content .= "`n`n[UINavigation]"
         content .= "`nNavigate=" UINavToggle.Value "`n"
+
+        content .= "`n[PriorityUpgrade]"
+        content .= "`nUpgrade=" PriorityUpgrade.Value "`n"
+
+        content .= "`n`n[UpgradeDuringPlacement]"
+        content .= "`nAttemptUpgrade=" UpgradeDuringPlacementBox.Value "`n"
 
         ; Save the stored coordinates
         content .= "`n[SavedCoordinates]`n"

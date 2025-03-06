@@ -8,8 +8,7 @@ CheckForUpdates()
 Hotkey(F1Key, (*) => moveRobloxWindow())
 Hotkey(F2Key, (*) => StartMacro())
 Hotkey(F3Key, (*) => Reload())
-Hotkey(F4Key, (*) => MonitorStage())
-;Hotkey(F4Key, (*) => TogglePause())
+Hotkey(F4Key, (*) => TogglePause())
 
 
 StartMacro(*) {
@@ -89,8 +88,12 @@ PlacingUnits() {
                         successfulCoordinates.Push({x: point.x, y: point.y, slot: slotNum})
                         placedCounts[slotNum] += 1
                         AddToLog("Placed Unit " slotNum " (" placedCounts[slotNum] "/" placements ")")
-                        CheckAbility()
-                        FixClick(560, 560) ; Move Click
+                    
+                        FixClick(740, 545) ; Click away from unit
+                        if (UpgradeDuringPlacementBox.Value) {
+                            AttemptUpgrade()
+                        }
+                    
                         break
                     }
                     
@@ -108,11 +111,86 @@ PlacingUnits() {
     UpgradeUnits()
 }
 
+AttemptUpgrade() {
+    global successfulCoordinates, PriorityUpgrade
+    global priority1, priority2, priority3, priority4, priority5, priority6
+
+    if (successfulCoordinates.Length = 0) {
+        return ; No units placed yet
+    }
+
+    AddToLog("Attempting to upgrade units...")
+
+    if (PriorityUpgrade.Value) {
+        AddToLog("Using priority-based upgrading")
+        
+        ; Loop through priority levels (1-6) and upgrade all matching units
+        for priorityNum in [1, 2, 3, 4, 5, 6] {
+            upgradedThisRound := false
+
+            for index, coord in successfulCoordinates.Clone() { ; Clone to allow removal
+                ; Get the priority value for this unit's slot
+                priority := "priority" coord.slot
+                priority := %priority%
+
+                if (priority.Text = priorityNum) {
+                    UpgradeUnit(coord.x, coord.y)
+
+                    if CheckForResults() {
+                        AddToLog("Stage ended during upgrades, proceeding to results")
+                        successfulCoordinates := []
+                        return MonitorStage()
+                    }
+
+                    if MaxUpgrade() {
+                        AddToLog("Max upgrade reached for Unit " coord.slot)
+                        successfulCoordinates.RemoveAt(index)
+                        FixClick(325, 185) ; Close upgrade menu
+                        continue
+                    }
+
+                    Sleep(200)
+                    FixClick(740, 545) ; Click away from unit
+                    Reconnect()
+                    CheckEndAndRoute()
+
+                    upgradedThisRound := true
+                }
+            }
+
+            if upgradedThisRound {
+                Sleep(300) ; Add a slight delay between batches
+            }
+        }
+    } else {
+        ; Normal (non-priority) upgrading - upgrade all available units
+        for index, coord in successfulCoordinates.Clone() {
+            UpgradeUnit(coord.x, coord.y)
+
+            if CheckForResults() {
+                AddToLog("Stage ended during upgrades, proceeding to results")
+                successfulCoordinates := []
+                return MonitorStage()
+            }
+
+            if MaxUpgrade() {
+                AddToLog("Max upgrade reached for Unit " coord.slot)
+                successfulCoordinates.RemoveAt(index)
+                FixClick(325, 185) ; Close upgrade menu
+                continue
+            }
+
+            Sleep(200)
+            FixClick(740, 545) ; Click away from unit
+            Reconnect()
+            CheckEndAndRoute()
+        }
+    }
+}
+
 CheckForResults() {
     ; Check for results text
     if (ok := FindText(&X, &Y, 276, 340, 359, 363, 0, 0, Results)) {
-        FixClick(325, 185)
-        FixClick(560, 560)
         return true
     }
     return false
@@ -355,9 +433,6 @@ MonitorEndScreen() {
 
     Loop {
         Sleep(3000)
-        FixClick(560, 560)
-        FixClick(560, 560)
-
         if (FindText(&X, &Y, 276, 340, 359, 363, 0, 0, Results)) {
             AddToLog("Found Lobby Text - Current Mode: " mode)
             Sleep(2000)
