@@ -7,7 +7,7 @@
 ;Update Checker
 global repoOwner := "itsRynsRoblox"
 global repoName := "anime-guardians-multi-use"
-global currentVersion := "1.6"
+global currentVersion := "1.6.1"
 ; Basic Application Info
 global aaTitle := "Ryn's Anime Guardians Macro "
 global version := "v" . currentVersion
@@ -527,13 +527,24 @@ UpdateTooltip() {
     if waitingForClick {
         MouseGetPos &x, &y
         waitingForClick := false
+        SetTimer UpdateTooltip, 0  ; Stop updating tooltip immediately
+
         if !IsSet(savedCoords)  ; Ensure savedCoords is initialized
             savedCoords := []
         savedCoords.Push({x: x, y: y})  ; Store as an object
-        ToolTip "Coordinates added: " x ", " y, x + 10, y + 10  ; Show tooltip at mouse position
+
+        ToolTip("Coordinates added: " x ", " y, x + 10, y + 10)  ; Show tooltip
         AddToLog("📌 Saved Coordinates → X: " x ", Y: " y)
-        SetTimer () => ToolTip(), -2000  ; Hide tooltip after 2 sec
+
+        ; Ensure tooltip disappears properly by resetting and manually clearing it
+        SetTimer ClearToolTip, -1200
     }
+}
+
+ClearToolTip() {
+    ToolTip()  ; Properly clear tooltip
+    Sleep 100  ; Small delay to ensure clearing happens across all systems
+    ToolTip()  ; Redundant clear to catch edge cases
 }
 
 DeleteSavedCoords() {

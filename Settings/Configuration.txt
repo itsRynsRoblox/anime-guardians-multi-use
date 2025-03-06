@@ -1,5 +1,5 @@
-Mode=Story
-Map=
+Mode=
+
 
 Enabled1=0
 Enabled2=0
@@ -38,7 +38,7 @@ Lobby=0
 
 
 [UINavigation]
-Navigate=1
+Navigate=0
 
 [PriorityUpgrade]
 Upgrade=1
@@ -48,4 +48,4 @@ Upgrade=1
 AttemptUpgrade=1
 
 [SavedCoordinates]
-X=699, Y=514
+NoCoordinatesSaved

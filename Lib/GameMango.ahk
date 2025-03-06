@@ -29,7 +29,7 @@ TogglePause(*) {
     }
 }
 
-PlacingUnits() {
+PlacingUnits(untilSuccessful := false) {
     global successfulCoordinates
     successfulCoordinates := []
     placedCounts := Map()  
@@ -50,63 +50,86 @@ PlacingUnits() {
         return MonitorStage()
     }
 
-    placementPoints := PlacementPatternDropdown.Text = "Custom" ? GenerateCustomPoints() : PlacementPatternDropdown.Text = "Circle" ? GenerateCirclePoints() : PlacementPatternDropdown.Text = "Grid" ? GenerateGridPoints() : PlacementPatternDropdown.Text = "Spiral" ? GenerateSpiralPoints() : PlacementPatternDropdown.Text = "Up and Down" ? GenerateUpandDownPoints() : GenerateRandomPoints()
-    
+    placementPoints := PlacementPatternDropdown.Text = "Custom" ? UseCustomPoints()
+                   : PlacementPatternDropdown.Text = "Circle" ? GenerateCirclePoints() 
+                   : PlacementPatternDropdown.Text = "Grid" ? GenerateGridPoints()  
+                   : GenerateRandomPoints()
+
     ; Go through each slot
     for slotNum in [1, 2, 3, 4, 5, 6] {
         enabled := "enabled" slotNum
         enabled := %enabled%
         enabled := enabled.Value
-        
+
         ; Get number of placements wanted for this slot
         placements := "placement" slotNum
         placements := %placements%
         placements := Integer(placements.Text)
-        
+
         ; Initialize count if not exists
         if !placedCounts.Has(slotNum)
             placedCounts[slotNum] := 0
-        
+
         ; If enabled, place all units for this slot
         if (enabled && placements > 0) {
             AddToLog("Placing Unit " slotNum " (0/" placements ")")
-            ; Place all units for this slot
-            while (placedCounts[slotNum] < placements) {
-                for point in placementPoints {
-                    ; Skip if this coordinate was already used successfully
-                    alreadyUsed := false
-                    for coord in successfulCoordinates {
-                        if (coord.x = point.x && coord.y = point.y) {
-                            alreadyUsed := true
-                            break
-                        }
+            
+            for point in placementPoints {
+                ; Skip if this coordinate was already used successfully
+                alreadyUsed := false
+                for coord in successfulCoordinates {
+                    if (coord.x = point.x && coord.y = point.y) {
+                        alreadyUsed := true
+                        break
                     }
-                    if (alreadyUsed)
-                        continue
-                
+                }
+                if (alreadyUsed)
+                    continue
+
+                ; If untilSuccessful is false, try once and move on
+                if (!untilSuccessful) {
                     if PlaceUnit(point.x, point.y, slotNum) {
                         successfulCoordinates.Push({x: point.x, y: point.y, slot: slotNum})
                         placedCounts[slotNum] += 1
                         AddToLog("Placed Unit " slotNum " (" placedCounts[slotNum] "/" placements ")")
-                    
-                        FixClick(740, 545) ; Click away from unit
+                        CheckAbility()
+                        FixClick(700, 560) ; Move Click
+                    }
+                    if (UpgradeDuringPlacementBox.Value) {
+                        AttemptUpgrade()
+                    }
+                    continue
+                }
+
+                ; If untilSuccessful is true, keep trying the same point until it works
+                while (placedCounts[slotNum] < placements) {
+                    if PlaceUnit(point.x, point.y, slotNum) {
+                        successfulCoordinates.Push({x: point.x, y: point.y, slot: slotNum})
+                        placedCounts[slotNum] += 1
+                        AddToLog("Placed Unit " slotNum " (" placedCounts[slotNum] "/" placements ")")
+                        CheckAbility()
+                        FixClick(700, 560) ; Move Click
                         if (UpgradeDuringPlacementBox.Value) {
                             AttemptUpgrade()
                         }
-                    
-                        break
+                        break ; Move to the next placement spot
                     }
-                    
+
+                    if (UpgradeDuringPlacementBox.Value) {
+                        AttemptUpgrade()
+                    }
+
                     if CheckForResults()
                         return MonitorStage()
+
                     Reconnect()
                     CheckEndAndRoute()
+                    Sleep(500) ; Prevents spamming clicks too fast
                 }
-                Sleep(500)
             }
         }
     }
-    
+
     AddToLog("All units placed to requested amounts")
     UpgradeUnits()
 }
@@ -122,7 +145,9 @@ AttemptUpgrade() {
     AddToLog("Attempting to upgrade units...")
 
     if (PriorityUpgrade.Value) {
-        AddToLog("Using priority-based upgrading")
+        if (debugMessages) {
+            AddToLog("Using priority-based upgrading")
+        }
         
         ; Loop through priority levels (1-6) and upgrade all matching units
         for priorityNum in [1, 2, 3, 4, 5, 6] {
@@ -422,7 +447,7 @@ RestartCustomStage() {
     CheckForVoteScreen()
 
     ; Begin unit placement and management
-    PlacingUnits()
+    PlacingUnits(true)
     
     ; Monitor stage progress
     MonitorStage()
@@ -1100,7 +1125,7 @@ RestartStage(seamless := false) {
     StartedGame()
 
     ; Begin unit placement and management
-    PlacingUnits()
+    PlacingUnits(false)
     
     ; Monitor stage progress
     MonitorStage()
@@ -1179,7 +1204,7 @@ MaxUpgrade() {
 }
 
 UnitPlaced() {
-    if (WaitForUpgradeText(4500)) { ; Wait up to 4.5 seconds for the upgrade text to appear
+    if (WaitForUpgradeText(PlacementSpeed())) { ; Wait up to 4.5 seconds for the upgrade text to appear
         AddToLog("Unit Placed Successfully")
         FixClick(325, 185) ; Close upgrade menu
         return true
@@ -1327,7 +1352,7 @@ CheckForFastWaves() {
     return false
 }
 
-GenerateCustomPoints() {
+UseCustomPoints() {
     global savedCoords  ; Access the global saved coordinates
     points := []
 
@@ -1554,5 +1579,5 @@ PlacementSpeed() {
     speedIndex := PlaceSpeed.Value  ; Get the selected speed value
 
     if speedIndex is number  ; Ensure it's a number
-        sleep speeds[speedIndex]  ; Use the value directly from the array
+        return speeds[speedIndex]  ; Use the value directly from the array
 }
