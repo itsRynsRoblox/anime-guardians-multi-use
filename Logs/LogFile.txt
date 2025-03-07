@@ -74,3 +74,12 @@ Configuration settings loaded successfully 00:00
 ==Ryn's Anime Guardians Macro v1.6==
   Start Time: [20h.53m.06s]
 Configuration settings loaded successfully 00:00
+
+==Ryn's Anime Guardians Macro v1.6.1==
+  Start Time: [19h.39m.21s]
+Configuration settings loaded successfully 00:00
+? Configuration settings and custom placements saved successfully! 00:06
+
+==Ryn's Anime Guardians Macro v1.6.1==
+  Start Time: [19h.39m.31s]
+Configuration settings loaded successfully 00:00
