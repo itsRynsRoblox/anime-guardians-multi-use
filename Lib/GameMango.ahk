@@ -334,8 +334,7 @@ UpgradeUnits() {
                                 if CheckForResults() {
                                     AddToLog("Stage ended during upgrades, proceeding to results")
                                     successfulCoordinates := []
-                                    MonitorStage()
-                                    return
+                                    return MonitorStage()
                                 }
 
                                 if MaxUpgrade() {
