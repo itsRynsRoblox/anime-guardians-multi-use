@@ -7,7 +7,7 @@
 ;Update Checker
 global repoOwner := "itsRynsRoblox"
 global repoName := "anime-guardians-multi-use"
-global currentVersion := "1.6.2"
+global currentVersion := "1.6.3"
 ; Basic Application Info
 global aaTitle := "Ryn's Anime Guardians Macro "
 global version := "v" . currentVersion
@@ -523,24 +523,25 @@ UpdateTooltip() {
     global waitingForClick
     if waitingForClick {
         MouseGetPos &x, &y
-        ToolTip "Press shift anywhere to save coordinates...", x + 10, y + 10  ; Offset tooltip slightly
+        ToolTip "Click anywhere to save coordinates...", x + 10, y + 10  ; Offset tooltip slightly
     } else {
         ToolTip()  ; Hide tooltip when not waiting
         SetTimer UpdateTooltip, 0  ; Stop the timer
     }
 }
 
-~LShift:: 
+~LButton::
 {
-    global waitingForClick, savedCoords  
+    global waitingForClick, savedCoords
     if waitingForClick {
+        ; Wait for the button press and get the position when the mouse button is clicked
         MouseGetPos &x, &y
         waitingForClick := false
         SetTimer UpdateTooltip, 0  ; Stop updating tooltip immediately
 
         if !IsSet(savedCoords)  ; Ensure savedCoords is initialized
             savedCoords := []
-        savedCoords.Push({x: x, y: y})  ; Store as an object
+        savedCoords.Push({x: x, y: y - 25})  ; Store as an object
 
         ToolTip("Coordinates added: " x ", " y, x + 10, y + 10)  ; Show tooltip
         AddToLog("📌 Saved Coordinates → X: " x ", Y: " y)

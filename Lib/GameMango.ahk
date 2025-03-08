@@ -29,9 +29,10 @@ TogglePause(*) {
     }
 }
 
-PlacingUnits(untilSuccessful := false) {
-    global successfulCoordinates
+PlacingUnits(untilSuccessful := true) {
+    global successfulCoordinates, maxedCoordinates
     successfulCoordinates := []
+    maxedCoordinates := []
     placedCounts := Map()  
 
     anyEnabled := false
@@ -52,7 +53,9 @@ PlacingUnits(untilSuccessful := false) {
 
     placementPoints := PlacementPatternDropdown.Text = "Custom" ? UseCustomPoints()
                    : PlacementPatternDropdown.Text = "Circle" ? GenerateCirclePoints() 
-                   : PlacementPatternDropdown.Text = "Grid" ? GenerateGridPoints()  
+                   : PlacementPatternDropdown.Text = "Grid" ? GenerateGridPoints() 
+                   : PlacementPatternDropdown.Text = "Spiral" ? GenerateSpiralPoints() 
+                   : PlacementPatternDropdown.Text = "Up and Down" ? GenerateUpandDownPoints() 
                    : GenerateRandomPoints()
 
     ; Go through each slot
@@ -83,49 +86,60 @@ PlacingUnits(untilSuccessful := false) {
                         break
                     }
                 }
+                for coord in maxedCoordinates {
+                    if (coord.x = point.x && coord.y = point.y) {
+                        alreadyUsed := true
+                        break
+                    }
+                }
                 if (alreadyUsed)
                     continue
 
                 ; If untilSuccessful is false, try once and move on
                 if (!untilSuccessful) {
-                    if PlaceUnit(point.x, point.y, slotNum) {
-                        successfulCoordinates.Push({x: point.x, y: point.y, slot: slotNum})
-                        placedCounts[slotNum] += 1
-                        AddToLog("Placed Unit " slotNum " (" placedCounts[slotNum] "/" placements ")")
-                        CheckAbility()
-                        FixClick(700, 560) ; Move Click
+                    if (placedCounts[slotNum] < placements) {
+                        if PlaceUnit(point.x, point.y, slotNum) {
+                            successfulCoordinates.Push({x: point.x, y: point.y, slot: slotNum})
+                            placedCounts[slotNum] += 1
+                            AddToLog("Placed Unit " slotNum " (" placedCounts[slotNum] "/" placements ")")
+                            CheckAbility()
+                            FixClick(700, 560) ; Move Click
+                            if (UpgradeDuringPlacementBox.Value) {
+                                AttemptUpgrade()
+                            }
+                        }
                     }
-                    if (UpgradeDuringPlacementBox.Value) {
-                        AttemptUpgrade()
-                    }
-                    continue
                 }
-
                 ; If untilSuccessful is true, keep trying the same point until it works
-                while (placedCounts[slotNum] < placements) {
-                    if PlaceUnit(point.x, point.y, slotNum) {
-                        successfulCoordinates.Push({x: point.x, y: point.y, slot: slotNum})
-                        placedCounts[slotNum] += 1
-                        AddToLog("Placed Unit " slotNum " (" placedCounts[slotNum] "/" placements ")")
-                        CheckAbility()
-                        FixClick(700, 560) ; Move Click
+                else {
+                    while (placedCounts[slotNum] < placements) {
+                        if PlaceUnit(point.x, point.y, slotNum) {
+                            successfulCoordinates.Push({x: point.x, y: point.y, slot: slotNum})
+                            placedCounts[slotNum] += 1
+                            AddToLog("Placed Unit " slotNum " (" placedCounts[slotNum] "/" placements ")")
+                            CheckAbility()
+                            FixClick(700, 560) ; Move Click
+                            if (UpgradeDuringPlacementBox.Value) {
+                                AttemptUpgrade()
+                            }
+                            break ; Move to the next placement spot
+                        }
+
                         if (UpgradeDuringPlacementBox.Value) {
                             AttemptUpgrade()
                         }
-                        break ; Move to the next placement spot
+
+                        if CheckForResults()
+                            return MonitorStage()
+
+                        Reconnect()
+                        CheckEndAndRoute()
+                        Sleep(500) ; Prevents spamming clicks too fast
                     }
-
-                    if (UpgradeDuringPlacementBox.Value) {
-                        AttemptUpgrade()
-                    }
-
-                    if CheckForResults()
-                        return MonitorStage()
-
-                    Reconnect()
-                    CheckEndAndRoute()
-                    Sleep(500) ; Prevents spamming clicks too fast
                 }
+
+                if CheckForResults()
+                    return MonitorStage()
             }
         }
     }
