@@ -1,260 +1,4 @@
 ﻿#Include %A_ScriptDir%\Lib\GUI.ahk
-global settingsFile := "" 
-
-
-setupFilePath() {
-    global settingsFile
-    
-    if !DirExist(A_ScriptDir "\Settings") {
-        DirCreate(A_ScriptDir "\Settings")
-    }
-
-    settingsFile := A_ScriptDir "\Settings\Configuration.txt"
-    return settingsFile
-}
-
-readInSettings() {
-    global enabled1, enabled2, enabled3, enabled4, enabled5, enabled6
-    global upgradeEnabled1, upgradeEnabled2, upgradeEnabled3, upgradeEnabled4, upgradeEnabled5, upgradeEnabled6
-    global placement1, placement2, placement3, placement4, placement5, placement6
-    global priority1, priority2, priority3, priority4, priority5, priority6
-    global mode
-    global PlacementPatternDropdown, PlaceSpeed, MatchMaking, ReturnLobbyBox, UINavToggle, PriorityUpgrade, UpgradeDuringPlacementBox
-    global savedCoords
-
-    try {
-        settingsFile := setupFilePath()
-        if !FileExist(settingsFile) {
-            return
-        }
-
-        content := FileRead(settingsFile)
-        lines := StrSplit(content, "`n")
-
-        savedCoords := []  ; Ensure it's initialized
-        isReadingCoords := false  ; Track if we are in the [SavedCoordinates] section
-        
-        for line in lines {
-            if line = "" {
-                continue
-            }
-        
-            parts := StrSplit(line, "=")
-        
-            ; Check if we're entering the [SavedCoordinates] section
-            if (line = "[SavedCoordinates]") {
-                isReadingCoords := true
-                continue  ; Skip this line
-            }
-        
-            ; If in [SavedCoordinates] section, parse coordinates
-            if (isReadingCoords) {
-                if (line = "NoCoordinatesSaved") {
-                    savedCoords := []  ; Clear the list if no coordinates were saved
-                    continue
-                }
-        
-                ; Extract X and Y values from "X=val, Y=val" format
-                coordParts := StrSplit(line, ", ")
-                x := StrReplace(coordParts[1], "X=")  ; Remove "X="
-                y := StrReplace(coordParts[2], "Y=")  ; Remove "Y="
-                
-                savedCoords.Push({x: x, y: y})  ; Store as an object
-                continue
-            }
-            
-            switch parts[1] {
-                case "Mode": mode := parts[2]
-                case "Enabled1": enabled1.Value := parts[2]
-                case "Enabled2": enabled2.Value := parts[2]
-                case "Enabled3": enabled3.Value := parts[2]
-                case "Enabled4": enabled4.Value := parts[2]
-                case "Enabled5": enabled5.Value := parts[2]
-                case "Enabled6": enabled6.Value := parts[2]
-                case "Placement1": placement1.Text := parts[2]
-                case "Placement2": placement2.Text := parts[2]
-                case "Placement3": placement3.Text := parts[2]
-                case "Placement4": placement4.Text := parts[2]
-                case "Placement5": placement5.Text := parts[2]
-                case "Placement6": placement6.Text := parts[2]
-                case "Priority1": priority1.Text := parts[2]
-                case "Priority2": priority2.Text := parts[2]
-                case "Priority3": priority3.Text := parts[2]
-                case "Priority4": priority4.Text := parts[2]
-                case "Priority5": priority5.Text := parts[2]
-                case "Priority6": priority6.Text := parts[2]
-                case "UpgradeEnabled1": upgradeEnabled1.Value := parts[2]
-                case "UpgradeEnabled2": upgradeEnabled2.Value := parts[2]
-                case "UpgradeEnabled3": upgradeEnabled3.Value := parts[2]
-                case "UpgradeEnabled4": upgradeEnabled4.Value := parts[2]
-                case "UpgradeEnabled5": upgradeEnabled5.Value := parts[2]
-                case "UpgradeEnabled6": upgradeEnabled6.Value := parts[2]
-                case "Speed": PlaceSpeed.Value := parts[2] ; Set the dropdown value
-                case "Logic": PlacementPatternDropdown.Value := parts[2] ; Set the dropdown value
-                case "Matchmake": MatchMaking.Value := parts[2] ; Set the checkbox value
-                case "Lobby": ReturnLobbyBox.Value := parts[2] ; Set the checkbox value
-                case "Navigate": UINavToggle.Value := parts[2] ; Set the checkbox value
-                case "Upgrade": PriorityUpgrade.Value := parts[2] ; Set the checkbox value
-                case "AttemptUpgrade": UpgradeDuringPlacementBox.Value := parts[2] ; Set the checkbox value
-
-
-            }
-        }
-        AddToLog("Configuration settings loaded successfully")
-    } 
-}
-
-
-SaveSettings(*) {
-    global enabled1, enabled2, enabled3, enabled4, enabled5, enabled6
-    global upgradeEnabled1, upgradeEnabled2, upgradeEnabled3, upgradeEnabled4, upgradeEnabled5, upgradeEnabled6
-    global placement1, placement2, placement3, placement4, placement5, placement6
-    global priority1, priority2, priority3, priority4, priority5, priority6
-    global mode
-    global PlacementPatternDropdown, PlaceSpeed, MatchMaking, ReturnLobbyBox, UINavToggle, PriorityUpgrade, UpgradeDuringPlacementBox
-    global savedCoords
-
-    try {
-        settingsFile := A_ScriptDir "\Settings\Configuration.txt"
-        if FileExist(settingsFile) {
-            FileDelete(settingsFile)
-        }
-
-        ; Save mode and map selection
-        content := "Mode=" mode "`n"
-        if (mode = "Story") {
-            content .= "Map=" StoryDropdown.Text
-        } else if (mode = "Raid") {
-            content .= "Map=" RaidDropdown.Text
-        }
-        
-        ; Save settings for each unit
-        content .= "`n`nEnabled1=" enabled1.Value
-        content .= "`nEnabled2=" enabled2.Value
-        content .= "`nEnabled3=" enabled3.Value
-        content .= "`nEnabled4=" enabled4.Value
-        content .= "`nEnabled5=" enabled5.Value
-        content .= "`nEnabled6=" enabled6.Value
-
-        content .= "`n`nPlacement1=" placement1.Text
-        content .= "`nPlacement2=" placement2.Text
-        content .= "`nPlacement3=" placement3.Text
-        content .= "`nPlacement4=" placement4.Text
-        content .= "`nPlacement5=" placement5.Text
-        content .= "`nPlacement6=" placement6.Text
-
-        content .= "`nPriority1=" priority1.Text
-        content .= "`nPriority2=" priority2.Text
-        content .= "`nPriority3=" priority3.Text
-        content .= "`nPriority4=" priority4.Text
-        content .= "`nPriority5=" priority5.Text
-        content .= "`nPriority6=" priority6.Text
-
-        content .= "`n`nUpgradeEnabled1=" upgradeEnabled1.Value
-        content .= "`nUpgradeEnabled2=" upgradeEnabled2.Value
-        content .= "`nUpgradeEnabled3=" upgradeEnabled3.Value
-        content .= "`nUpgradeEnabled4=" upgradeEnabled4.Value
-        content .= "`nUpgradeEnabled5=" upgradeEnabled5.Value
-        content .= "`nUpgradeEnabled6=" upgradeEnabled6.Value
-
-
-        content .= "`n`n[PlacementLogic]"
-        content .= "`nLogic=" PlacementPatternDropdown.Value "`n"
-
-        content .= "`n`n[PlaceSpeed]"
-        content .= "`nSpeed=" PlaceSpeed.Value "`n"
-
-        content .= "`n`n[Matchmaking]"
-        content .= "`nMatchmake=" MatchMaking.Value "`n"
-
-        content .= "`n`n[ReturnToLobby]"
-        content .= "`nLobby=" ReturnLobbyBox.Value "`n"
-
-        content .= "`n`n[UINavigation]"
-        content .= "`nNavigate=" UINavToggle.Value "`n"
-
-        content .= "`n[PriorityUpgrade]"
-        content .= "`nUpgrade=" PriorityUpgrade.Value "`n"
-
-        content .= "`n`n[UpgradeDuringPlacement]"
-        content .= "`nAttemptUpgrade=" UpgradeDuringPlacementBox.Value "`n"
-
-        ; Save the stored coordinates
-        content .= "`n[SavedCoordinates]`n"
-        if (IsSet(savedCoords) && savedCoords.Length > 0) {
-            for coord in savedCoords {
-                content .= Format("X={1}, Y={2}`n", coord.x, coord.y)
-            }
-        } else {
-            content .= "NoCoordinatesSaved`n"
-        }
-        
-        FileAppend(content, settingsFile)
-        AddToLog("✅ Configuration settings and custom placements saved successfully!")
-    }
-}
-
-LoadSettings() {
-    global UnitData, mode
-    try {
-        settingsFile := A_ScriptDir "\Settings\Configuration.txt"
-        if !FileExist(settingsFile) {
-            return
-        }
-
-        content := FileRead(settingsFile)
-        sections := StrSplit(content, "`n`n")
-        
-        for section in sections {
-
-            if (InStr(section, "PlacementLogic")) {
-                if RegExMatch(line, "Logic=(\w+)", &match) {
-                    PlacementPatternDropdown.Value := match.1 ; Set the dropdown value
-                }
-            }
-            else if (InStr(section, "PlaceSpeed")) {
-                if RegExMatch(line, "Speed=(\w+)", &match) {
-                    PlaceSpeed.Value := match.1 ; Set the dropdown value
-                }
-            }
-            else if (InStr(section, "Matchmaking")) {
-                if RegExMatch(line, "Matchmake=(\w+)", &match) {
-                    MatchMaking.Value := match.1 ; Set the dropdown value
-                }
-            }
-            else if (InStr(section, "ReturnToLobby")) {
-                if RegExMatch(line, "Lobby=(\w+)", &match) {
-                    ReturnLobbyBox.Value := match.1 ; Set the dropdown value
-                }
-            }
-            else if (InStr(section, "UINavigation")) {
-                if RegExMatch(line, "Navigate=(\w+)", &match) {
-                    UINavToggle.Value := match.1 ; Set the dropdown value
-                }
-            }
-            else if (InStr(section, "Index=")) {
-                lines := StrSplit(section, "`n")
-                
-                for line in lines {
-                    if line = "" {
-                        continue
-                    }
-                    
-                    parts := StrSplit(line, "=")
-                    if (parts[1] = "Index") {
-                        index := parts[2]
-                    } else if (index && UnitData.Has(Integer(index))) {
-                        switch parts[1] {
-                            case "Enabled": UnitData[index].Enabled.Value := parts[2]
-                            case "Placement": UnitData[index].PlacementBox.Value := parts[2]
-                        }
-                    }
-                }
-            }
-        }
-        AddToLog("Auto settings loaded successfully")
-    }
-}
 
 SaveKeybindSettings(*) {
     AddToLog("Saving Keybind Configuration")
@@ -292,4 +36,603 @@ LoadKeybindSettings() {
                 global F4Key := parts[2]
         }
     }
+}
+
+SaveSettingsForMode(*) {
+    try {
+        ; Create the Settings directory if it doesn't exist
+        settingsDir := A_ScriptDir "\Settings\Modes"
+        if !DirExist(settingsDir)
+            DirCreate(settingsDir)
+
+        ; Use ModeDropdown.Text to determine the filename
+
+        if (!ModeConfigurations.Value) {
+            gameMode := "Default"
+        } else {
+            gameMode := ModeDropdown.Text
+        }
+
+        if !gameMode {
+            gameMode := "Default"
+        }
+
+        ; Sanitize the game mode name to avoid illegal filename characters
+        settingsFile := settingsDir "\" gameMode "_Configuration.txt"
+
+        ; Delete the existing file for this mode (optional)
+        if FileExist(settingsFile)
+            FileDelete(settingsFile)
+
+        ; Start building the content
+        content := "[Unit Settings]"
+
+        for settingType in ["Enabled", "Placement", "Priority", "UpgradePriority", "UpgradeEnabled", "UpgradeLimit", "UpgradeLimitEnabled"] {
+            loop 6 {
+                index := A_Index
+                setting := %settingType%%index%
+                value := (settingType = "UpgradeLimit" || settingType = "UpgradePriority") ? setting.Text : setting.Value
+                content .= "`n" settingType index "=" value
+            }
+        }
+
+        content .= "`n`n[Auto Ability Settings]"
+        content .= "`nAutoAbility=" AutoAbilityBox.Value
+        content .= "`nAutoAbilityTimer=" AutoAbilityTimer.Text
+
+        content .= "`n`n[Zoom Settings]"
+        content .= "`nZoomLevel=" ZoomBox.Value
+
+        content .= "`n`n[Upgrade Settings]"
+        content .= "`nAuto Upgrade=" AutoUpgrade.Value
+        content .= "`nUnit Manager Upgrade System=" UnitManagerUpgradeSystem.Value
+        content .= "`nPriority Upgrade=" PriorityUpgrade.Value
+
+        content .= "`n`n[Auto Challenge Settings]"
+        content .= "`nAuto Challenge=" AutoChallenge.Value
+
+        content .= "`n`n[Portal Settings]"
+        content .= "`nFarm More Portals=" FarmMorePortals.Value
+
+        content .= "`n`n[Gate Settings]"
+        content .= "`nPremade Gate Movement=" GateMovement.Value
+
+        content .= "`n`n[Unit Settings]"
+        content .= "`nNuke Enabled=" NukeUnitSlotEnabled.Value
+        content .= "`nNuke Slot=" NukeUnitSlot.Value
+        content .= "`nNuke Coords=" nukeCoords.x "," nukeCoords.y
+        content .= "`nNuke At Specific Wave=" NukeAtSpecificWave.Value
+        content .= "`nNuke Wave=" NukeWave.Value
+        content .= "`nNuke Delay=" NukeDelay.Value
+        content .= "`nSlot 1 Minion=" MinionSlot1.Value
+        content .= "`nSlot 2 Minion=" MinionSlot2.Value
+        content .= "`nSlot 3 Minion=" MinionSlot3.Value
+        content .= "`nSlot 4 Minion=" MinionSlot4.Value
+        content .= "`nSlot 5 Minion=" MinionSlot5.Value
+        content .= "`nSlot 6 Minion=" MinionSlot6.Value
+        content .= "`nCheck If Sold=" CheckIfSold.Value
+        content .= "`nCheck If Sold Timer=" CheckIfSoldTimer.Value
+
+        FileAppend(content, settingsFile)
+        SaveCustomPlacements()
+        SaveCustomWalk()
+        SaveUniversalSettings()
+        AddToLog("✅ Saved settings for mode: " gameMode)
+        SaveAllConfigs()
+    }
+}
+
+LoadUnitSettingsByMode() {
+    global UnitConfigMap, nukeCoords
+
+    InitSettings()
+
+    local mode := ModeDropdown.Text
+    if !mode
+        mode := "Default"
+
+    ; Sanitize mode for filename safety
+    safeMode := RegExReplace(mode, '[\\/:*?"<>|]', "_")
+    settingsFile := A_ScriptDir "\Settings\Modes\" safeMode "_Configuration.txt"
+
+    if !FileExist(settingsFile) {
+        AddToLog("⚠️ No configuration found for mode: " mode)
+        SaveSettingsForMode()  ; Save default settings if missing
+        return
+    }
+
+    content := FileRead(settingsFile)
+    lines := StrSplit(content, "`n")
+
+    for line in lines {
+        line := Trim(line)
+        if line = "" || InStr(line, "[")
+            continue
+
+        parts := StrSplit(line, "=")
+        if (parts.Length < 2)
+            continue
+
+        key := Trim(parts[1])
+        value := Trim(parts[2])
+
+        if UnitConfigMap.Has(key) {
+            ctrl := UnitConfigMap[key].control
+            prop := UnitConfigMap[key].prop
+            try ctrl.%prop% := value
+        } else if (key = "Nuke Coords") {
+            coords := StrSplit(value, ",")
+            if coords.Length >= 2
+                nukeCoords := { x: coords[1], y: coords[2] }
+        }
+    }
+
+    LoadCustomPlacements()
+    InitControlGroups()
+    LoadUniversalSettings()
+    LoadCustomWalk()
+    LoadAllCardConfig()
+
+    AddToLog("✅ Settings successfully loaded for mode: " mode)
+}
+
+
+
+SaveCustomPlacements() {
+    global savedCoords
+
+    ; Ensure Settings folder exists
+    settingsDir := A_ScriptDir "\Settings"
+    if !DirExist(settingsDir)
+        DirCreate(settingsDir)
+
+    placementFile := settingsDir "\CustomPlacements.txt"
+
+    ; Optionally delete the old file first
+    if FileExist(placementFile)
+        FileDelete(placementFile)
+
+    placementData := "[SavedCoordinates]`n"
+
+    for presetIndex, _ in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] {
+        placementData .= Format("[Preset {1}]`n", presetIndex)
+
+        if (IsSet(savedCoords) && savedCoords.Length >= presetIndex && savedCoords[presetIndex].Length > 0) {
+            for coord in savedCoords[presetIndex] {
+                placementData .= Format("X={1}, Y={2}`n", coord.x, coord.y)
+            }
+        } else {
+            placementData .= "NoCoordinatesSaved`n"
+        }
+    }
+    FileAppend(placementData, placementFile)
+}
+
+LoadCustomPlacements() {
+    global savedCoords
+
+    savedCoords := []  ; Reinitialize
+    placementFile := A_ScriptDir "\Settings\CustomPlacements.txt"
+
+    ; Create the file with a default header if it doesn't exist
+    if !FileExist(placementFile) {
+        ; Ensure the directory exists
+        if !DirExist(A_ScriptDir "\Settings")
+            DirCreate(A_ScriptDir "\Settings")
+        SaveCustomPlacements()
+    }
+
+    content := FileRead(placementFile)
+    lines := StrSplit(content, "`n")
+
+    currentPreset := 0
+
+    for line in lines {
+        line := Trim(line)
+        if (line = "" || line = "[SavedCoordinates]")
+            continue
+
+        ; Detect preset header
+        if RegExMatch(line, "^\[Preset (\d+)\]$", &match) {
+            currentPreset := match[1] + 0
+
+            ; Ensure array size
+            while (savedCoords.Length < currentPreset)
+                savedCoords.Push([])
+
+            continue
+        }
+
+        if (line = "NoCoordinatesSaved") {
+            savedCoords[currentPreset] := []
+            continue
+        }
+
+        ; Parse "X=..., Y=..." format
+        coordParts := StrSplit(line, ", ")
+        x := StrReplace(coordParts[1], "X=")
+        y := StrReplace(coordParts[2], "Y=")
+
+        savedCoords[currentPreset].Push({ x: x, y: y })
+    }
+}
+
+LoadUniversalSettings() {
+    universalFile := A_ScriptDir "\Settings\Modes\Universal_Configuration.txt"
+    if !FileExist(universalFile) {
+        AddToLog("⚠️ No universal settings found.")
+        return
+    }
+
+    content := FileRead(universalFile)
+    lines := StrSplit(content, "`n")
+
+    for line in lines {
+        line := Trim(line)
+        if line = "" || InStr(line, "[")
+            continue
+
+        parts := StrSplit(line, "=")
+
+        key := parts[1], value := parts[2]
+
+        switch key {
+            case "Return To Lobby": ReturnLobbyBox.Value := value
+            case "Next Level": NextLevelBox.Value := value
+            case "Using Mode Configurations": ModeConfigurations.Value := value
+            case "Webhook Enabled": WebhookEnabled.Value := value
+            case "Webhook URL": WebhookURLBox.Text := value
+            case "Webhook Logs Enabled": WebhookLogsEnabled.Value := value
+            case "Private Server Enabled": PrivateServerEnabled.Value := value
+            case "Private Server URL": PrivateServerURLBox.Text := value
+            case "Matchmaking Failsafe": MatchmakingFailsafe.Value := value
+            case "Matchmaking Failsafe Timer": MatchmakingFailsafeTimer.Value := value
+            case "Placement Pattern": PlacementPatternDropdown.Value := value
+            case "Placement Order": PlacementSelection.Value := value
+            case "Placement Profile": PlacementProfiles.Value := value
+            case "Placement Speed": PlaceSpeed.Value := value
+            case "Place Until Successful": PlaceUntilSuccessful.Value := value
+            case "Story Difficulty": StoryDifficulty.Value := value
+            case "Matchmaking Enabled": Matchmaking.Value := value
+        }
+    }
+}
+
+
+SaveUniversalSettings() {
+    try {
+        universalFile := A_ScriptDir "\Settings\Modes\Universal_Configuration.txt"
+        if FileExist(universalFile)
+            FileDelete(universalFile)
+
+        content .= "[Universal Settings]"
+        content .= "`nNext Level=" NextLevelBox.Value
+        content .= "`nReturn To Lobby=" ReturnLobbyBox.Value
+        content .= "`nUsing Mode Configurations=" ModeConfigurations.Value
+
+        content .= "`n`n[Webhook Settings]"
+        content .= "`nWebhook Enabled=" WebhookEnabled.Value
+        content .= "`nWebhook URL=" WebhookURLBox.Text
+        content .= "`nWebhook Logs Enabled=" WebhookLogsEnabled.Value
+
+        content .= "`n`n[Private Server Settings]"
+        content .= "`nPrivate Server Enabled=" PrivateServerEnabled.Value
+        content .= "`nPrivate Server URL=" PrivateServerURLBox.Text
+
+        content .= "`n`n[Matchmaking Settings]"
+        content .= "`nMatchmaking Enabled=" Matchmaking.Value
+        content .= "`nMatchmaking Failsafe=" MatchmakingFailsafe.Value
+        content .= "`nMatchmaking Failsafe Timer=" MatchmakingFailsafeTimer.Value
+
+        content .= "`n`n[Story Settings]"
+        content .= "`nStory Difficulty=" StoryDifficulty.Value
+
+        content .= "`n`n[Placement Settings]"
+        content .= "`nPlacement Pattern=" PlacementPatternDropdown.Value
+        content .= "`nPlacement Order=" PlacementSelection.Value
+        content .= "`nPlacement Profile=" PlacementProfiles.Value
+        content .= "`nPlacement Speed=" PlaceSpeed.Value
+        content .= "`nPlace Until Successful=" PlaceUntilSuccessful.Value
+
+        FileAppend(content, universalFile)
+    }
+}
+
+SaveCustomWalk() {
+    global savedWalkCoords
+
+    ; Ensure Settings folder exists
+    settingsDir := A_ScriptDir "\Settings"
+    if !DirExist(settingsDir)
+        DirCreate(settingsDir)
+
+    placementFile := settingsDir "\CustomWalk.txt"
+
+    ; Optionally delete the old file first
+    if FileExist(placementFile)
+        FileDelete(placementFile)
+
+    placementData := "[SavedWalkCoordinates]`n"
+
+    for presetIndex, _ in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] {
+        placementData .= Format("[Preset {1}]`n", presetIndex)
+
+        if (IsSet(savedWalkCoords) && savedWalkCoords.Length >= presetIndex && savedWalkCoords[presetIndex].Length > 0) {
+            for coord in savedWalkCoords[presetIndex] {
+                placementData .= Format("X={1}, Y={2}, Delay={3}`n", coord.x, coord.y, coord.delay)
+            }
+        } else {
+            placementData .= "NoCoordinatesSaved`n"
+        }
+    }
+    FileAppend(placementData, placementFile)
+}
+
+LoadCustomWalk() {
+    global savedWalkCoords
+
+    savedWalkCoords := []  ; Reinitialize
+    placementFile := A_ScriptDir "\Settings\CustomWalk.txt"
+
+    ; Create the file with a default header if it doesn't exist
+    if !FileExist(placementFile) {
+        ; Ensure the directory exists
+        if !DirExist(A_ScriptDir "\Settings")
+            DirCreate(A_ScriptDir "\Settings")
+        SaveCustomWalk()
+    }
+
+    content := FileRead(placementFile)
+    lines := StrSplit(content, "`n")
+
+    currentPreset := 0
+
+    for line in lines {
+        line := Trim(line)
+        if (line = "" || line = "[SavedWalkCoordinates]")
+            continue
+
+        ; Detect preset header
+        if RegExMatch(line, "^\[Preset (\d+)\]$", &match) {
+            currentPreset := match[1] + 0
+
+            ; Ensure array size
+            while (savedWalkCoords.Length < currentPreset)
+                savedWalkCoords.Push([])
+
+            continue
+        }
+
+        if (line = "NoCoordinatesSaved") {
+            savedWalkCoords[currentPreset] := []
+            continue
+        }
+
+        ; Parse "X=..., Y=..." format
+        coordParts := StrSplit(line, ", ")
+        x := StrReplace(coordParts[1], "X=")
+        y := StrReplace(coordParts[2], "Y=")
+        delay := StrReplace(coordParts[3], "Delay=")
+        savedWalkCoords[currentPreset].Push({ x: x, y: y, delay: delay })
+    }
+}
+
+ImportSettingsFromFile() {
+    global MainUI, UnitConfigMap, nukeCoords
+
+    ; Temporarily disable AlwaysOnTop for file dialog
+    MainUI.Opt("-AlwaysOnTop")
+    Sleep(100)
+
+    file := FileSelect(3, , "Select a configuration file to import", "Text Documents (*.txt)")
+    MainUI.Opt("+AlwaysOnTop")
+
+    if !file
+        return
+
+    content := FileRead(file)
+    lines := StrSplit(content, "`n")
+
+    for line in lines {
+        line := Trim(line)
+        if (line = "" || InStr(line, "["))
+            continue
+
+        parts := StrSplit(line, "=")
+        if parts.Length < 2
+            continue
+
+        key := Trim(parts[1])
+        value := Trim(parts[2])
+
+        if UnitConfigMap.Has(key) {
+            ctrl := UnitConfigMap[key].control
+            prop := UnitConfigMap[key].prop
+            try ctrl.%prop% := value
+        } else if (key = "Nuke Coords") {
+            coords := StrSplit(value, ",")
+            if coords.Length >= 2
+                nukeCoords := { x: coords[1], y: coords[2] }
+        }
+    }
+
+    ; Finalize
+    AddToLog("📥 Imported settings from external file!")
+}
+
+ExportCoordinatesPreset(presetIndex) {
+    global savedCoords
+
+    if !IsSet(savedCoords) || savedCoords.Length < presetIndex || savedCoords[presetIndex].Length = 0 {
+        AddToLog("⚠️ No coordinates saved for Preset " presetIndex)
+        return
+    }
+
+    ; Ensure export directory
+    exportDir := A_ScriptDir "\Settings\Export"
+    if !DirExist(exportDir)
+        DirCreate(exportDir)
+
+    file := exportDir "\Preset" presetIndex ".txt"
+
+    exportData := Format("[Preset {1}]`n", presetIndex)
+    for coord in savedCoords[presetIndex] {
+        exportData .= Format("X={1}, Y={2}`n", coord.x, coord.y)
+    }
+
+    try {
+        if FileExist(file)
+            FileDelete(file)
+        FileAppend(exportData, file)
+    } catch {
+        AddToLog "❌ Failed to save preset"
+        return
+    }
+
+    AddToLog("✅ Preset " presetIndex " exported to: Settings\Export\Preset" presetIndex ".txt")
+}
+
+ImportCoordinatesPreset() {
+    global savedCoords, MainUI
+
+    ; Allow file dialog to appear
+    MainUI.Opt("-AlwaysOnTop")
+    Sleep(100)
+
+    file := FileSelect(3, , "Import a custom placement preset", "Text Documents (*.txt)")
+
+    if !file
+        return
+
+    content := FileRead(file)
+    lines := StrSplit(content, "`n")
+
+    newPresetCoords := []
+
+    for line in lines {
+        line := Trim(line)
+        if (line = "" || InStr(line, "[Preset"))
+            continue
+
+        if (line = "NoCoordinatesSaved") {
+            break
+        }
+
+        coordParts := StrSplit(line, ", ")
+        if coordParts.Length < 2
+            continue
+
+        x := StrReplace(coordParts[1], "X=")
+        y := StrReplace(coordParts[2], "Y=")
+        newPresetCoords.Push({ x: x + 0, y: y + 0 })  ; Convert to numbers
+    }
+
+    if newPresetCoords.Length = 0 {
+        MsgBox "❌ No coordinates found in file."
+        return
+    }
+
+    ; Prompt user for target slot using AHK v2 InputBox
+    result := InputBox("Enter preset slot (1–10) to import into:", "Import Custom Placements", "h95 w250")
+
+    MainUI.Opt("+AlwaysOnTop")
+
+    if result.Result = "Cancel" {
+        AddToLog("❌ Import canceled.")
+        return
+    }
+
+    targetSlot := Trim(result.Value)
+
+    if !RegExMatch(targetSlot, "^\d+$") || targetSlot < 1 || targetSlot > 10 {
+        MsgBox "❌ Invalid input. Please enter a number between 1 and 10."
+        return
+    }
+
+    targetSlot := targetSlot + 0
+
+    ; Ensure array is large enough
+    while (savedCoords.Length < targetSlot)
+        savedCoords.Push([])
+
+    savedCoords[targetSlot] := newPresetCoords
+
+    AddToLog("✅ Imported preset into slot " targetSlot "!")
+}
+
+ExportUnitConfig() {
+    global UnitConfigMap, nukeCoords
+
+    ; Set export directory and default file name
+    exportDir := A_ScriptDir "\Settings\Export"
+    if !DirExist(exportDir)
+        DirCreate(exportDir)
+
+    file := exportDir "\Exported_Unit_Config.txt"
+    configData := ""
+
+    ; Export all mapped settings
+    for key, obj in UnitConfigMap {
+        ctrl := obj.control
+        prop := obj.prop
+        try configData .= key "=" ctrl.%prop% "`n"
+    }
+
+    ; Nuke coordinates (handled separately)
+    if IsSet(nukeCoords) {
+        configData .= "Nuke Coords=" nukeCoords.x "," nukeCoords.y "`n"
+    }
+
+    ; Save to file
+    try {
+        if FileExist(file)
+            FileDelete(file)
+        FileAppend(configData, file)
+        AddToLog("✅ Unit configuration exported to Export\Exported_Unit_Config.txt")
+    } catch {
+        AddToLog("❌ Failed to export unit config.")
+    }
+}
+
+
+InitSettings() {
+    loop 6 {
+        i := A_Index
+        UnitConfigMap["Enabled" i] := { control: enabled%i%, prop: "Value" }
+        UnitConfigMap["UpgradeEnabled" i] := { control: upgradeEnabled%i%, prop: "Value" }
+        UnitConfigMap["UpgradeLimitEnabled" i] := { control: upgradeLimitEnabled%i%, prop: "Value" }
+        UnitConfigMap["UpgradeLimit" i] := { control: UpgradeLimit%i%, prop: "Text" }
+        UnitConfigMap["Placement" i] := { control: placement%i%, prop: "Text" }
+        UnitConfigMap["Priority" i] := { control: priority%i%, prop: "Text" }
+        UnitConfigMap["UpgradePriority" i] := { control: UpgradePriority%i%, prop: "Text" }
+    }
+
+    ; Other controls
+    UnitConfigMap["AutoAbility"] := { control: AutoAbilityBox, prop: "Value" }
+    UnitConfigMap["AutoAbilityTimer"] := { control: AutoAbilityTimer, prop: "Text" }
+
+    UnitConfigMap["Auto Challenge"] := { control: AutoChallenge, prop: "Value" }
+
+    UnitConfigMap["ZoomLevel"] := { control: ZoomBox, prop: "Text" }
+    UnitConfigMap["Auto Upgrade"] := { control: AutoUpgrade, prop: "Value" }
+    UnitConfigMap["Unit Manager Upgrade System"] := { control: UnitManagerUpgradeSystem, prop: "Value" }
+    UnitConfigMap["Priority Upgrade"] := { control: PriorityUpgrade, prop: "Value" }
+    UnitConfigMap["Farm More Portals"] := { control: FarmMorePortals, prop: "Value" }
+    UnitConfigMap["Premade Gate Movement"] := { control: GateMovement, prop: "Value" }
+
+    UnitConfigMap["Nuke Enabled"] := { control: NukeUnitSlotEnabled, prop: "Value" }
+    UnitConfigMap["Nuke Slot"] := { control: NukeUnitSlot, prop: "Value" }
+    UnitConfigMap["Nuke At Specific Wave"] := { control: NukeAtSpecificWave, prop: "Value" }
+    UnitConfigMap["Nuke Wave"] := { control: NukeWave, prop: "Value" }
+    UnitConfigMap["Nuke Delay"] := { control: NukeDelay, prop: "Value" }
+
+    UnitConfigMap["Slot 1 Minion"] := { control: MinionSlot1, prop: "Value" }
+    UnitConfigMap["Slot 2 Minion"] := { control: MinionSlot2, prop: "Value" }
+    UnitConfigMap["Slot 3 Minion"] := { control: MinionSlot3, prop: "Value" }
+    UnitConfigMap["Slot 4 Minion"] := { control: MinionSlot4, prop: "Value" }
+    UnitConfigMap["Slot 5 Minion"] := { control: MinionSlot5, prop: "Value" }
+    UnitConfigMap["Slot 6 Minion"] := { control: MinionSlot6, prop: "Value" }
+
+    UnitConfigMap["Check If Sold"] := { control: CheckIfSold, prop: "Value" }
+    UnitConfigMap["Check If Sold Timer"] := { control: CheckIfSoldTimer, prop: "Value" }
 }

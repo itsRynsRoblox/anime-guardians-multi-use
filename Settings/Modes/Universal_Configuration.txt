@@ -1,0 +1,28 @@
+[Universal Settings]
+Next Level=0
+Return To Lobby=1
+Using Mode Configurations=0
+
+[Webhook Settings]
+Webhook Enabled=0
+Webhook URL=
+Webhook Logs Enabled=0
+
+[Private Server Settings]
+Private Server Enabled=0
+Private Server URL=
+
+[Matchmaking Settings]
+Matchmaking Enabled=0
+Matchmaking Failsafe=0
+Matchmaking Failsafe Timer=120
+
+[Story Settings]
+Story Difficulty=1
+
+[Placement Settings]
+Placement Pattern=1
+Placement Order=2
+Placement Profile=1
+Placement Speed=3
+Place Until Successful=0

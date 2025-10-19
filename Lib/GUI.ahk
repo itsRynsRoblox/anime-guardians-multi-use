@@ -1,52 +1,53 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
-#Include Image.ahk
-#Include Functions.ahk
-#Include UpdateChecker.ahk
+#Include %A_ScriptDir%/lib/Tools/Image.ahk
+#Include %A_ScriptDir%/lib/Functions/Functions.ahk
 
-;Update Checker
-global repoOwner := "itsRynsRoblox"
-global repoName := "anime-guardians-multi-use"
-global currentVersion := "1.6.3"
-; Basic Application Info
-global aaTitle := "Ryn's Anime Guardians Macro "
-global version := "v" . currentVersion
+; Application Info
+global GameTitle := "Ryn's Anime Guardians Macro "
+global version := "v1.0"
 global rblxID := "ahk_exe RobloxPlayerBeta.exe"
 ;Coordinate and Positioning Variables
 global targetWidth := 816
 global targetHeight := 638
 global offsetX := -5
 global offsetY := 1
-global WM_SIZING := 0x0214
-global WM_SIZE := 0x0005
 global centerX := 408
 global centerY := 320
 global successfulCoordinates := []
-;State Variables
-global enabledUnits := Map()  
-global placementValues := Map()
+global totalUnits := Map()
+;Statistics Tracking
+global mode := ""
+global StartTime := A_TickCount
+global currentTime := GetCurrentTime()
+; Config and Settings
+global UnitConfigMap := Map()
+;Auto Challenge
+global firstStartup := true
+; Testing
+global waitingState := Map()
+;Custom Unit Placement
+global waitingForClick := false
+global savedCoords := [[], []]  ; Index-based: one array for each preset
+global savedWalkCoords := [[], []]  ; Index-based: one array for each preset
+;Nuke Ability
+global nukeCoords := []
 ;Hotkeys
 global F1Key := "F1"
 global F2Key := "F2"
 global F3Key := "F3"
 global F4Key := "F4"
-;Statistics Tracking
-global Wins := 0
-global loss := 0
-global mode := ""
-global StartTime := A_TickCount
-global currentTime := GetCurrentTime()
-;Custom Unit Placement
-global waitingForClick := false
-global savedCoords := []  ; Initialize an empty array to hold the coordinates
 ;Gui creation
 global uiBorders := []
 global uiBackgrounds := []
 global uiTheme := []
 global UnitData := []
-global aaMainUI := Gui("+AlwaysOnTop -Caption")
+global MainUI := Gui("+AlwaysOnTop -Caption")
+global CardGUI := Gui("+AlwaysOnTop")
 global lastlog := ""
-global aaMainUIHwnd := aaMainUI.Hwnd
+global MainUIHwnd := MainUI.Hwnd
+global ActiveControlGroup := ""
+global ControlGroups := Map()
 ;Theme colors
 uiTheme.Push("0xffffff")  ; Header color
 uiTheme.Push("0c000a")  ; Background color
@@ -54,14 +55,10 @@ uiTheme.Push("0xffffff")    ; Border color
 uiTheme.Push("0c000a")  ; Accent color
 uiTheme.Push("0x3d3c36")   ; Trans color
 uiTheme.Push("000000")    ; Textbox color
-uiTheme.Push("00ffb3") ; HighLight
+;uiTheme.Push("00ffb3") ; HighLight
+uiTheme.Push("00a2ff") ; HighLight
 ;Logs/Save settings
-global settingsGuiOpen := false
-global SettingsGUI := ""
 global currentOutputFile := A_ScriptDir "\Logs\LogFile.txt"
-global WebhookURLFile := "Settings\WebhookURL.txt"
-global DiscordUserIDFile := "Settings\DiscordUSERID.txt"
-global SendActivityLogsFile := "Settings\SendActivityLogs.txt"
 ;Custom Pictures
 GithubImage := "Images\github-logo.png"
 DiscordImage := "Images\another_discord.png"
@@ -75,130 +72,107 @@ if !DirExist(A_ScriptDir "\Settings") {
 
 setupOutputFile()
 
-;------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------
-aaMainUI.BackColor := uiTheme[2]
-global Webhookdiverter := aaMainUI.Add("Edit", "x0 y0 w1 h1 +Hidden", "") ; diversion
-uiBorders.Push(aaMainUI.Add("Text", "x0 y0 w1364 h1 +Background" uiTheme[3]))  ;Top line
-uiBorders.Push(aaMainUI.Add("Text", "x0 y0 w1 h697 +Background" uiTheme[3]))   ;Left line
-uiBorders.Push(aaMainUI.Add("Text", "x1363 y0 w1 h630 +Background" uiTheme[3])) ;Right line
-uiBorders.Push(aaMainUI.Add("Text", "x1363 y0 w1 h697 +Background" uiTheme[3])) ;Second Right line
-uiBackgrounds.Push(aaMainUI.Add("Text", "x3 y3 w1360 h27 +Background" uiTheme[2])) ;Title Top
-uiBorders.Push(aaMainUI.Add("Text", "x0 y30 w1363 h1 +Background" uiTheme[3])) ;Title bottom
-uiBorders.Push(aaMainUI.Add("Text", "x803 y443 w560 h1 +Background" uiTheme[3])) ;Placement bottom
-uiBorders.Push(aaMainUI.Add("Text", "x803 y527 w560 h1 +Background" uiTheme[3])) ;Process bottom
-uiBorders.Push(aaMainUI.Add("Text", "x802 y30 w1 h667 +Background" uiTheme[3])) ;Roblox Right
-uiBorders.Push(aaMainUI.Add("Text", "x0 y697 w1364 h1 +Background" uiTheme[3], "")) ;Roblox second bottom
+; === Need To Load These Before GUI ===
+global currentCardMode := "Default"
+global CardModeConfigs := Map(
+    "Default", Map(
+        "modeName", "Default",
+        "title", "Default Card Priority",
+        "filePath", "Settings\DefaultCardPriority.txt",
+        "options", [
+            ""
+        ]
+    )
+)
 
-global robloxHolder := aaMainUI.Add("Text", "x3 y33 w797 h597 +Background" uiTheme[5], "") ;Roblox window box
-global exitButton := aaMainUI.Add("Picture", "x1330 y1 w32 h32 +BackgroundTrans", Exitbutton) ;Exit image
-exitButton.OnEvent("Click", (*) => Destroy()) ;Exit button
-global minimizeButton := aaMainUI.Add("Picture", "x1300 y3 w27 h27 +Background" uiTheme[2], Minimize) ;Minimize gui
-minimizeButton.OnEvent("Click", (*) => minimizeUI()) ;Minimize gui
-aaMainUI.SetFont("Bold s16 c" uiTheme[1], "Verdana") ;Font
-global windowTitle := aaMainUI.Add("Text", "x10 y3 w1200 h29 +BackgroundTrans", aaTitle "" . "" version) ;Title
+global currentConfig := CardModeConfigs[currentCardMode]
 
-aaMainUI.Add("Text", "x805 y501 w558 h25 +Center +BackgroundTrans", "Process") ;Process header
-uiBorders.Push(aaMainUI.Add("Text", "x803 y499 w560 h1 +Background" uiTheme[3])) ;Process Top
-aaMainUI.SetFont("norm s11 c" uiTheme[1]) ;Font
-global process1 := aaMainUI.Add("Text", "x810 y536 w538 h18 +BackgroundTrans c" uiTheme[7], "➤ Original Creator: Ryn (@TheRealTension)") ;Processes
-global process2 := aaMainUI.Add("Text", "xp yp+22 w538 h18 +BackgroundTrans", "") ;Processes 
-global process3 := aaMainUI.Add("Text", "xp yp+22 w538 h18 +BackgroundTrans", "") 
-global process4 := aaMainUI.Add("Text", "xp yp+22 w538 h18 +BackgroundTrans", "") 
-global process5 := aaMainUI.Add("Text", "xp yp+22 w538 h18 +BackgroundTrans", "") 
-global process6 := aaMainUI.Add("Text", "xp yp+22 w538 h18 +BackgroundTrans", "") 
-global process7 := aaMainUI.Add("Text", "xp yp+22 w538 h18 +BackgroundTrans", "") 
-WinSetTransColor(uiTheme[5], aaMainUI) ;Roblox window box
+; ========== Constants and Theme Setup ==========
+mainWidth := 1364
+mainHeight := 697
+robloxWidth := 802
+uiColors := Map(
+    "Primary", uiTheme[1],
+    "Background", uiTheme[2],
+    "Border", uiTheme[3],
+    "RobloxBox", uiTheme[5],
+    "ProcessHighlight", uiTheme[7]
+)
 
-;--------------SETTINGS;--------------SETTINGS;--------------SETTINGS;--------------SETTINGS;--------------SETTINGS;--------------SETTINGS;--------------SETTINGS
-ShowSettingsGUI(*) {
-    global settingsGuiOpen, SettingsGUI
-    
-    ; Check if settings window already exists
-    if (SettingsGUI && WinExist("ahk_id " . SettingsGUI.Hwnd)) {
-        WinActivate("ahk_id " . SettingsGUI.Hwnd)
-        return
-    }
-    
-    if (settingsGuiOpen) {
-        return
-    }
-    
-    settingsGuiOpen := true
-    SettingsGUI := Gui("-MinimizeBox +Owner" aaMainUIHwnd)  
-    SettingsGui.Title := "Settings"
-    SettingsGUI.OnEvent("Close", OnSettingsGuiClose)
-    SettingsGUI.BackColor := uiTheme[2]
-    
-    ; Window border
-    SettingsGUI.Add("Text", "x0 y0 w1 h600 +Background" uiTheme[3])     ; Left
-    SettingsGUI.Add("Text", "x599 y0 w1 h600 +Background" uiTheme[3])   ; Right
-    SettingsGUI.Add("Text", "x0 y399 w600 h1 +Background" uiTheme[3])   ; Bottom
-    
-    ; Right side sections
-    SettingsGUI.SetFont("s10", "Verdana")
-    SettingsGUI.Add("GroupBox", "x310 y5 w280 h160 c" uiTheme[1], "Discord Webhook")  ; Box
-    
-    SettingsGUI.SetFont("s9", "Verdana")
-    SettingsGUI.Add("Text", "x320 y30 c" uiTheme[1], "Webhook URL")     ; Webhook Text
-    global WebhookURLBox := SettingsGUI.Add("Edit", "x320 y50 w260 h20 c" uiTheme[6])  ; Store webhook
-    SettingsGUI.Add("Text", "x320 y83 c" uiTheme[1], "Discord ID (optional)")  ; Discord Id Text
-    global DiscordUserIDBox := SettingsGUI.Add("Edit", "x320 y103 w260 h20 c" uiTheme[6])  ; Store Discord ID
-    global SendActivityLogsBox := SettingsGUI.Add("Checkbox", "x320 y135 c" uiTheme[1], "Send Process")  ; Enable Activity
-
-    ; HotKeys
-    SettingsGUI.Add("GroupBox", "x10 y90 w160 h160 c" uiTheme[1], "Keybinds")
-    SettingsGUI.Add("Text", "x20 y110 c" uiTheme[1], "Position Roblox:")
-    global F1Box := SettingsGUI.Add("Edit", "x125 y110 w30 h20 c" uiTheme[6], F1Key)
-    SettingsGUI.Add("Text", "x20 y140 c" uiTheme[1], "Start Macro:")
-    global F2Box := SettingsGUI.Add("Edit", "x100 y140 w30 h20 c" uiTheme[6], F2Key)
-    SettingsGUI.Add("Text", "x20 y170 c" uiTheme[1], "Stop Macro:")
-    global F3Box := SettingsGUI.Add("Edit", "x100 y170 w30 h20 c" uiTheme[6], F3Key)
-    SettingsGUI.Add("Text", "x20 y200 c" uiTheme[1], "Pause Macro:")
-    global F4Box := SettingsGUI.Add("Edit", "x110 y200 w30 h20 c" uiTheme[6], F4Key)
-
-    ; Private Server section
-    SettingsGUI.Add("GroupBox", "x310 y280 w280 h100 c" uiTheme[1], "PS Link")  ; Box
-    SettingsGUI.Add("Text", "x320 y300 c" uiTheme[1], "Private Server Link (optional)")  ; Ps text
-    global PsLinkBox := SettingsGUI.Add("Edit", "x320 y320 w260 h20 c" uiTheme[6])  ;  ecit box
-
-    SettingsGUI.Add("GroupBox", "x10 y10 w115 h70 c" uiTheme[1], "UI Navigation")
-    SettingsGUI.Add("Text", "x20 y30 c" uiTheme[1], "Navigation Key")
-    global UINavBox := SettingsGUI.Add("Edit", "x20 y50 w20 h20 c" uiTheme[6], "\")
-
-    ; Save buttons
-    webhookSaveBtn := SettingsGUI.Add("Button", "x460 y135 w120 h25", "Save Webhook")
-    webhookSaveBtn.OnEvent("Click", (*) => SaveWebhookSettings())
-
-    keybindSaveBtn := SettingsGUI.Add("Button", "x20 y220 w50 h20", "Save")
-    keybindSaveBtn.OnEvent("Click", SaveKeybindSettings)
-
-    PsSaveBtn := SettingsGUI.Add("Button", "x460 y345 w120 h25", "Save PsLink")
-    PsSaveBtn.OnEvent("Click", (*) => SavePsSettings())
-
-    UINavSaveBtn := SettingsGUI.Add("Button", "x50 y50 w60 h20", "Save")
-    UINavSaveBtn.OnEvent("Click", (*) => SaveUINavSettings())
-
-    ; Loadsettings
-    if FileExist(WebhookURLFile)
-        WebhookURLBox.Value := FileRead(WebhookURLFile, "UTF-8")
-    if FileExist(DiscordUserIDFile)
-        DiscordUserIDBox.Value := FileRead(DiscordUserIDFile, "UTF-8")
-    if FileExist(SendActivityLogsFile)
-        SendActivityLogsBox.Value := (FileRead(SendActivityLogsFile, "UTF-8") = "1")   
-    if FileExist("Settings\PrivateServer.txt")
-        PsLinkBox.Value := FileRead("Settings\PrivateServer.txt", "UTF-8")
-    if FileExist("Settings\UINavigation.txt")
-        UINavBox.Value := FileRead("Settings\UINavigation.txt", "UTF-8")
-
-    ; Show the settings window
-    SettingsGUI.Show("w600 h400")
-    Webhookdiverter.Focus()
+; ========== Helper Functions ==========
+AddUI(type, options, text := "", onClickFunc := unset) {
+    ctrl := MainUI.Add(type, options, text)
+    if IsSet(onClickFunc)
+        ctrl.OnEvent("Click", onClickFunc)
+    return ctrl
 }
+
+AddBorder(x, y, w, h) {
+    return MainUI.Add("Text", Format("x{} y{} w{} h{} +Background{}", x, y, w, h, uiColors["Border"]))
+}
+; ========== GUI Initialization ==========
+
+MainUI.BackColor := uiColors["Background"]
+global Webhookdiverter := AddUI("Edit", "x0 y0 w1 h1 +Hidden")
+
+; ========== Borders ==========
+uiBorders.Push(AddBorder(0, 0, mainWidth, 1))                          ; Top
+uiBorders.Push(AddBorder(0, 0, 1, mainHeight))                         ; Left
+uiBorders.Push(AddBorder(mainWidth - 1, 0, 1, 630))                    ; Right
+uiBorders.Push(AddBorder(mainWidth - 1, 0, 1, mainHeight))            ; Full Right
+uiBorders.Push(AddBorder(0, 30, mainWidth - 1, 1))                     ; Under Title
+uiBorders.Push(AddBorder(803, 443, 560, 1))                            ; Placement Bottom
+uiBorders.Push(AddBorder(803, 527, 560, 1))                            ; Process Bottom
+uiBorders.Push(AddBorder(802, 30, 1, 667))                             ; Roblox Right
+uiBorders.Push(AddBorder(0, mainHeight - 1, mainWidth, 1))            ; Bottom Line
+uiBorders.Push(AddBorder(0, 630, robloxWidth + 0.5, 1))               ; Game Bottom
+
+; ========== Backgrounds ==========
+uiBackgrounds.Push(MainUI.Add("Text", Format("x3 y3 w{} h27 +Background{}", mainWidth - 4, uiColors["Background"])))
+
+; ========== Roblox Window Area ==========
+global robloxHolder := MainUI.Add("Text", Format("x3 y33 w797 h597 +Background{}", uiColors["RobloxBox"]), "")
+
+; ========== Exit and Minimize Buttons ==========
+global exitButton := AddUI("Picture", "x1330 y1 w32 h32 +BackgroundTrans", Exitbutton, (*) => Destroy())
+global minimizeButton := AddUI("Picture", "x1305 y3 w27 h27 +Background" uiColors["Background"], Minimize, (*) => minimizeUI())
+
+; ========== Import ==========
+global importUnitConfigButton := AddUI("Picture", "x1312 y48 w20 h20 +BackgroundTrans", Import, (*) => ImportSettingsFromFile())
+global exportUnitConfigButton := AddUI("Picture", "x1337 y48 w20 h20 +BackgroundTrans", Export, (*) => ExportUnitConfig())
+
+; ========== Title ==========
+MainUI.SetFont("Bold s16 c" uiColors["Primary"], "Verdana")
+global windowTitle := MainUI.Add("Text", "x10 y3 w1200 h29 +BackgroundTrans", GameTitle "" . "" version)
+
+; ========== Console Label ==========
+MainUI.Add("Text", "x805 y501 w558 h25 +Center +BackgroundTrans", "Console")
+uiBorders.Push(AddBorder(803, 499, 560, 1)) ; Console Top Border
+
+; ========== Process Text Lines ==========
+MainUI.SetFont("norm s11 c" uiColors["Primary"])
+global processList := []
+baseY := 536
+
+loop 7 {
+    yOffset := (A_Index - 1) * 22
+    text := ""
+    color := uiColors["Primary"]
+    if A_Index = 1 {
+        text := "➤ Original Creator: Ryn (@TheRealTension)"
+        color := uiColors["ProcessHighlight"]
+    }
+    process := MainUI.Add("Text", Format("x810 y{} w538 h18 +BackgroundTrans c{}", baseY + yOffset, color), text)
+    processList.Push(process)
+}
+
+; ========== Transparency ==========
+WinSetTransColor(uiColors["RobloxBox"], MainUI)
 
 OpenGuide(*) {
     GuideGUI := Gui("+AlwaysOnTop")
     GuideGUI.SetFont("s10 bold", "Segoe UI")
-    GuideGUI.Title := "Anime Guardians Guide"
+    GuideGUI.Title := "Ryn's Anime Guardians Guide"
 
     GuideGUI.BackColor := "0c000a"
     GuideGUI.MarginX := 20
@@ -206,204 +180,384 @@ OpenGuide(*) {
 
     ; Add Guide content
     GuideGUI.SetFont("s16 bold", "Segoe UI")
-
-    GuideGUI.Add("Text", "x0 w800 cWhite +Center", "1 - In your ROBLOX settings, make sure your keyboard is set to click to move and your graphics are set to 1 and enable UI navigation")
-    GuideGUI.Add("Picture", "x50 w700   cWhite +Center", "Images\Clicktomove.png")
-    GuideGUI.Add("Picture", "x50 w700   cWhite +Center", "Images\graphics1.png")
-    GuideGUI.Show("w800")
+    GuideGUI.Show("Center")
 }
 
-aaMainUI.SetFont("s12 Bold c" uiTheme[1])
-global settingsBtn := aaMainUI.Add("Button", "x1160 y0 w90 h30", "Settings")
-settingsBtn.OnEvent("Click", ShowSettingsGUI)
-global guideBtn := aaMainUI.Add("Button", "x1060 y0 w90 h30", "Guide")
+MainUI.SetFont("s9 Bold c" uiTheme[1])
+
+DebugButton := MainUI.Add("Button", "x608 y5 w90 h20 +Center Hidden", "Debug")
+
+global guideBtn := MainUI.Add("Button", "x708 y5 w90 h20", "Guide")
 guideBtn.OnEvent("Click", OpenGuide)
 
-placementSaveBtn := aaMainUI.Add("Button", "x807 y471 w80 h20", "Save")
-placementSaveBtn.OnEvent("Click", SaveSettings)
-aaMainUI.SetFont("s9")
-global MatchMaking := aaMainUI.Add("Checkbox", "x1143 y476 cffffff Hidden Checked", "Matchmaking")
-global NextLevelBox := aaMainUI.Add("Checkbox", "x900 y451 cffffff Checked", "Next Level")
-global ReturnLobbyBox := aaMainUI.Add("Checkbox", "x1015 y451 cffffff Checked", "Return To Lobby")
-global UpgradeDuringPlacementBox := aaMainUI.Add("Checkbox", "x1150 y451 cffffff Checked", "Upgrade During Placement")
-;global AutoAbilityBox := aaMainUI.Add("CheckBox", "x900 y476 cffffff Checked", "Auto Ability")
-global UINavToggle := aaMainUI.Add("CheckBox", "x900 y476 cffffff Checked", "UI Navigation")
-global PriorityUpgrade := aaMainUI.Add("CheckBox", "x1015 y476 cffffff", "Priority Upgrade")
-PlacementPatternText := aaMainUI.Add("Text", "x1032 y390 w115 h20", "Placement Type")
-global PlacementPatternDropdown := aaMainUI.Add("DropDownList", "x1035 y410 w100 h180 Choose2 +Center", ["Circle", "Grid", "Random", "Custom"])
-PlaceSpeedText := aaMainUI.Add("Text", "x1193 y390 w115 h20", "Placement Speed")
-global PlaceSpeed := aaMainUI.Add("DropDownList", "x1205 y410 w100 h180 Choose1 +Center", ["Super Fast (1s)", "Fast (1.5s)", "Default (2s)", "Slow (2.5s)", "Very Slow (3s)", "Toaster (4s)"])
-;PlaceSpeed.OnEvent('Change', (*) => changePlacementSpeed())
+global cardButton := MainUI.Add("Button", "x808 y5 w90 h20", "Card Config")
+cardButton.OnEvent("Click", (*) => OpenCardConfig())
 
-PlacementSelectionText := aaMainUI.Add("Text", "x857 y390 w130 h20", "Placement Settings")
-PlacementSelection := aaMainUI.Add("DropDownList", "x865 y410 w100 h180 Choose1 +Center", ["Normal"])
-placementSaveText := aaMainUI.Add("Text", "x807 y451 w80 h20", "Save Config")
+global unitButton := MainUI.Add("Button", "x908 y5 w90 h20", "Unit Config")
+unitButton.OnEvent("Click", (*) => ToggleControlGroup("Unit"))
 
-customPlacementText := aaMainUI.Add("Text", "x200 y642 w120 h20 +Left", "Set Placements")
-customPlacementButton := aaMainUI.Add("Button", "x210 y662 w80 h20", "Set")
-customPlacementButton.OnEvent("Click", (*) => StartClickCapture())
+global upgradeButton := MainUI.Add("Button", "x1008 y5 w90 h20", "Upgrades")
+upgradeButton.OnEvent("Click", (*) => ToggleControlGroup("Upgrade"))
 
-customPlacementClearText := aaMainUI.Add("Text", "x345 y642 w120 h20 +Left", "Clear Placements")
-customPlacementClearButton := aaMainUI.Add("Button", "x360 y662 w80 h20", "Clear")
-customPlacementClearButton.OnEvent("Click", (*) => DeleteSavedCoords())
+global modeButton := MainUI.Add("Button", "x1108 y5 w90 h20", "Mode Config")
+modeButton.OnEvent("Click", (*) => ToggleControlGroup("Mode"))
 
-Hotkeytext := aaMainUI.Add("Text", "x807 y35 w530 h30", "To change keybinds click top right settings, Below are default hotkey settings ")
-Hotkeytext2 := aaMainUI.Add("Text", "x807 y50 w530 h30", "F1:Reposition roblox window|F2:Start Macro|F3:Stop Macro|F4:Pause Macro")
-GithubButton := aaMainUI.Add("Picture", "x30 y640 w40 h40 +BackgroundTrans cffffff", GithubImage)
-DiscordButton := aaMainUI.Add("Picture", "x112 y645 w60 h34 +BackgroundTrans cffffff", DiscordImage)
+global settingsBtn := MainUI.Add("Button", "x1208 y5 w90 h20", "Settings")
+settingsBtn.OnEvent("Click", (*) => ToggleControlGroup("Settings"))
+
+placementSaveBtn := MainUI.Add("Button", "x807 y471 w80 h20", "Save")
+placementSaveBtn.OnEvent("Click", SaveSettingsForMode)
+
+MainUI.SetFont("s9")
+
+global NextLevelBox := MainUI.Add("Checkbox", "x900 y451 cffffff", "Next Level")
+global AutoChallenge := MainUI.Add("Checkbox", "x900 y476 cffffff Hidden", "Auto Challenge")
+global Matchmaking := MainUI.Add("Checkbox", "x900 y476 cffffff", "Matchmaking")
+
+global ReturnLobbyBox := MainUI.Add("Checkbox", "x1150 y476 cffffff Checked", "Return To Lobby")
+
+global AutoAbilityBox := MainUI.Add("CheckBox", "x1005 y451 cffffff Checked " (autoAbilityDisabled ? "Hidden" : ""), "Auto Ability")
+global AutoAbilityText := MainUI.Add("Text", "x1125 y451 " (autoAbilityDisabled ? " Hidden " : "") " c" uiTheme[1], "Auto Ability Timer:")
+global AutoAbilityTimer := MainUI.Add("Edit", "x1255 y449 w60 h20 " (autoAbilityDisabled ? "Hidden" : "") " cBlack Number", "60")
+
+PlacementPatternText := MainUI.Add("Text", "x815 y390 w125 h20", "Placement Pattern")
+global PlacementPatternDropdown := MainUI.Add("DropDownList", "x825 y410 w100 h180 Choose2 +Center", ["Circle", "Custom", "Grid", "3x3 Grid", "Spiral", "Up and Down", "Random"])
+
+PlacementProfilesText := MainUI.Add("Text", "x1100 y390 w125 h20", "Placement Presets")
+global PlacementProfiles := MainUI.Add("DropDownList", "x1110 y410 w100 h180 Choose1 +Center", ["Story", "Raid", "Portals", "Gates", "Custom #1", "Custom #2", "Custom #3", "Custom #4"])
+
+PlaceSpeedText := MainUI.Add("Text", "x956 y390 w115 h20", "Placement Speed")
+global PlaceSpeed := MainUI.Add("DropDownList", "x963 y410 w100 h180 Choose3 +Center", ["Super Fast (1s)", "Fast (1.5s)", "Default (2s)", "Slow (2.5s)", "Very Slow (3s)", "Toaster (4s)"])
+
+PlacementSelectionText := MainUI.Add("Text", "x1245 y390 w115 h20", "Placement Order")
+global PlacementSelection := MainUI.Add("DropDownList", "x1250 y410 w100 h180 Choose1 +Center", ["Default", "By Priority"])
+
+placementSaveText := MainUI.Add("Text", "x807 y451 w80 h20", "Save Config")
+Hotkeytext := MainUI.Add("Text", "x807 y35 w200 h30", F1Key ": Fix Roblox Position")
+Hotkeytext2 := MainUI.Add("Text", "x807 y50 w200 h30", F2Key ": Start Macro")
+Hotkeytext3 := MainUI.Add("Text", "x807 y65 w200 h30", F3Key ": Stop Macro")
+GithubButton := MainUI.Add("Picture", "x30 y640", GithubImage)
+DiscordButton := MainUI.Add("Picture", "x112 y645 w60 h34 +BackgroundTrans cffffff", DiscordImage)
+
+global CustomSettings := MainUI.Add("GroupBox", "x190 y632 w390 h60 +Center c" uiTheme[1], "Custom Placement Settings")
+
+customPlacementImportButton := AddUI("Picture", "x205 y652 w27 h27 +BackgroundTrans", Import, (*) => ImportCoordinatesPreset())
+customPlacementExportButton := AddUI("Picture", "x255 y652 w27 h27 +BackgroundTrans", Export, (*) => ExportCoordinatesPreset(PlacementProfiles.Value))
+
+customPlacementButton := MainUI.Add("Button", "x300 y662 w80 h20", "Set")
+customPlacementButton.OnEvent("Click", (*) => StartCoordCapture())
+
+customPlacementClearButton := MainUI.Add("Button", "x395 y662 w80 h20", "Clear")
+customPlacementClearButton.OnEvent("Click", (*) => DeleteCoordsForPreset(PlacementProfiles.Value))
+
+fixCameraText := MainUI.Add("Text", "x505 y642 w60 h20 +Left", "Camera")
+fixCameraButton := MainUI.Add("Button", "x490 y662 w80 h20", "Fix")
+fixCameraButton.OnEvent("Click", (*) => BasicSetup(true))
+
+; === Custom Walk Settings ===
+global CustomWalkSettings := MainUI.Add("GroupBox", "x600 y632 w190 h60 +Center c" uiTheme[1], "Custom Walk Settings")
+customWalkButton := MainUI.Add("Button", "x610 y662 w45 h20", "Set")
+customWalkButton.OnEvent("Click", (*) => StartWalkCapture())
+
+customWalkTestButton := MainUI.Add("Button", "x673 y662 w45 h20", "Test")
+customWalkTestButton.OnEvent("Click", (*) => WalkToCoords())
+
+customWalkClearButton := MainUI.Add("Button", "x735 y662 w45 h20", "Clear")
+customWalkClearButton.OnEvent("Click", (*) => DeleteWalkCoordsForPreset(PlacementProfiles.Value))
+; === End of Custom Walk Settings ===
+
+; === Settings GUI ===
+global WebhookBorder := MainUI.Add("GroupBox", "x808 y85 w550 h296 +Center Hidden c" uiTheme[1], "Webhook Settings")
+global WebhookEnabled := MainUI.Add("CheckBox", "x825 y110 Hidden cffffff", "Webhook Enabled")
+WebhookEnabled.OnEvent("Click", (*) => ValidateWebhook())
+global WebhookLogsEnabled := MainUI.Add("CheckBox", "x825 y130 Hidden cffffff", "Send Console Logs")
+global WebhookURLBox := MainUI.Add("Edit", "x1000 y108 w260 h20 Hidden c" uiTheme[6], "")
+
+global PrivateSettingsBorder := MainUI.Add("GroupBox", "x808 y145 w550 h296 +Center Hidden c" uiTheme[1], "Reconnection Settings")
+global PrivateServerEnabled := MainUI.Add("CheckBox", "x825 y165 Hidden cffffff", "Reconnect to Private Server")
+global PrivateServerURLBox := MainUI.Add("Edit", "x1050 y163 w160 h20 Hidden c" uiTheme[6], "")
+PrivateServerTestButton := MainUI.Add("Button", "x1225 y163 w80 h20 Hidden", "Test Link")
+PrivateServerTestButton.OnEvent("Click", (*) => Reconnect(true))
+global MatchmakingFailsafe := MainUI.Add("CheckBox", "x825 y185 Hidden cffffff", "Enable Matchmaking Failsafe")
+global MatchmakingFailsafeTimerText := MainUI.Add("Text", "x1050 y188 h20 Hidden c" uiTheme[1], "Time until reconnect:")
+global MatchmakingFailsafeTimer := MainUI.Add("Edit", "x1195 y186 w50 h20 Hidden Number c" uiTheme[6], "60")
+; === End of Settings GUI ===
+
+; HotKeys
+global KeybindBorder := MainUI.Add("GroupBox", "x808 y205 w195 h176 +Center Hidden c" uiTheme[1], "Keybind Settings")
+global F1Text := MainUI.Add("Text", "x825 y230 Hidden c" uiTheme[1], "Position Roblox:")
+global F1Box := MainUI.Add("Edit", "x950 y228 w30 h20 Hidden c" uiTheme[6], F1Key)
+global F2Text := MainUI.Add("Text", "x825 y260 Hidden c" uiTheme[1], "Start Macro:")
+global F2Box := MainUI.Add("Edit", "x950 y258 w30 h20 Hidden c" uiTheme[6], F2Key)
+global F3Text := MainUI.Add("Text", "x825 y290 Hidden c" uiTheme[1], "Stop Macro:")
+global F3Box := MainUI.Add("Edit", "x950 y288 w30 h20 Hidden c" uiTheme[6], F3Key)
+global F4Text := MainUI.Add("Text", "x825 y320 Hidden c" uiTheme[1], "Pause Macro:")
+global F4Box := MainUI.Add("Edit", "x950 y318 w30 h20 Hidden c" uiTheme[6], F4Key)
+
+keybindSaveBtn := MainUI.Add("Button", "x880 y350 w50 h20 Hidden", "Save")
+keybindSaveBtn.OnEvent("Click", SaveKeybindSettings)
+
+global UpgradeBorder := MainUI.Add("GroupBox", "x808 y85 w550 h296 +Center Hidden c" uiTheme[1], "Upgrade Settings")
+global UnitManagerUpgradeSystem := MainUI.Add("CheckBox", "x825 y110 Hidden cffffff", "Use the Unit Manager to upgrade your units")
+global PriorityUpgrade := MainUI.Add("CheckBox", "x825 y130 cffffff Hidden", "Use Unit Priority while upgrading")
+
+global AutoUpgradeBorder := MainUI.Add("GroupBox", "x808 y170 w550 h210 +Center Hidden c" uiTheme[1], "Auto-Upgrade Settings")
+global AutoUpgrade := MainUI.Add("CheckBox", "x825 y197 Hidden cffffff", "Enable Auto-Upgrading")
+
+global ZoomSettingsBorder := MainUI.Add("GroupBox", "x1000 y205 w165 h176 +Center Hidden c" uiTheme[1], "Zoom Settings")
+global ZoomText := MainUI.Add("Text", "x1018 y230 Hidden c" uiTheme[1], "Zoom Level:")
+global ZoomBox := MainUI.Add("Edit", "x1115 y228 w30 h20 Hidden cBlack Number", "20")
+ZoomBox.OnEvent("Change", (*) => ValidateEditBox(ZoomBox))
+
+global MiscSettingsBorder := MainUI.Add("GroupBox", "x1163 y205 w195 h176 +Center Hidden c" uiTheme[1], "Import/Export")
+global UnitConfigText := MainUI.Add("Text", "x1200 y230 w120 h20 Hidden cffffff", "Unit Configuration")
+global UnitImportButton := MainUI.Add("Button", "x1180 y258 w80 h20 Hidden", "Import")
+UnitImportButton.OnEvent("Click", (*) => ImportSettingsFromFile())
+global UnitExportButton := MainUI.Add("Button", "x1265 y258 w80 h20 Hidden", "Export")
+UnitExportButton.OnEvent("Click", (*) => ExportUnitConfig())
+
+global CustomPlacementText := MainUI.Add("Text", "x1200 y290 w140 h20 Hidden cffffff", "Custom Placements")
+global CustomPlacementImportButton := MainUI.Add("Button", "x1180 y318 w80 h20 Hidden", "Import")
+CustomPlacementImportButton.OnEvent("Click", (*) => ImportCoordinatesPreset())
+global CustomPlacementExportButton := MainUI.Add("Button", "x1265 y318 w80 h20 Hidden", "Export")
+CustomPlacementExportButton.OnEvent("Click", (*) => ExportCoordinatesPreset(PlacementProfiles.Value))
+
+global ModeBorder := MainUI.Add("GroupBox", "x808 y85 w550 h296 +Center Hidden c" uiTheme[1], "Mode Configuration")
+global ModeConfigurations := MainUI.Add("CheckBox", "x825 y110 Hidden cffffff", "Enable Per-Mode Unit Settings")
+
+global StoryBorder := MainUI.Add("GroupBox", "x808 y150 w550 h231 +Center Hidden c" uiTheme[1], "Story Settings")
+global StoryDifficultyText := MainUI.Add("Text", "x825 y170 Hidden", "Story Difficulty")
+global StoryDifficulty := MainUI.Add("DropDownList", "x825 y185 w100 h180 Hidden Choose1 +Center", ["Normal", "Hard"])
+
+global GateBorder := MainUI.Add("GroupBox", "x808 y220 w550 h161 +Center Hidden c" uiTheme[1], "Gate Settings")
+global GateMovement := MainUI.Add("CheckBox", "x825 y250 Hidden cffffff", "Use premade movement to walk to the center of the gate room")
+
+global PortalBorder := MainUI.Add("GroupBox", "x808 y290 w550 h91 +Center Hidden c" uiTheme[1], "Portal Settings")
+global FarmMorePortals := MainUI.Add("CheckBox", "x825 y310 Hidden cffffff", "Farm more portals when possible if out of portals")
+
+; === Unit Config GUI ===
+global NukeBorder := MainUI.Add("GroupBox", "x808 y85 w550 h296 +Center Hidden" uiTheme[1], "Nuke Configuration")
+global NukeUnitSlotEnabled := MainUI.Add("Checkbox", "x825 y113 Hidden Choose1 cffffff Checked", "Nuke Unit | Slot")
+global NukeUnitSlot := MainUI.Add("DropDownList", "x960 y110 w100 h180 Hidden Choose1", ["1", "2", "3", "4", "5", "6"])
+global NukeCoordinatesText := MainUI.Add("Text", "x1080 y113 Hidden cffffff", "Nuke Ability Coordinates")
+global NukeCoordinatesButton := MainUI.Add("Button", "x1260 y110 w80 h20 Hidden", "Set")
+NukeCoordinatesButton.OnEvent("Click", (*) => StartNukeCapture())
+global NukeAtSpecificWave := MainUI.Add("Checkbox", "x825 y140 Hidden Choose1 cffffff Checked", "Nuke At Wave | Wave")
+global NukeWave := MainUI.Add("Edit", "x1000 y137 w30 h20 Hidden cBlack Number", "10")
+NukeWave.OnEvent("Change", (*) => ValidateEditBox(NukeWave))
+global NukeDelayText := MainUI.Add("Text", "x1120 y140 Hidden cffffff", "Nuke Delay")
+global NukeDelay := MainUI.Add("Edit", "x1210 y138 w40 h20 Hidden cBlack Number", "0")
+NukeDelay.OnEvent("Change", (*) => ValidateEditBox(NukeDelay))
+
+; === Disbled At The Moment ===
+global SJWNuke := MainUI.Add("CheckBox", "x825 y110 Hidden cffffff", "Use SJW Nuke")
+global SJWSlotText := MainUI.Add("Text", "x825 y130 Hidden cffffff", "SJW Slot")
+global SJWSlot := MainUI.Add("DropDownlist", "x905 y128 w45 Hidden Choose0 +Center", ["1", "2", "3", "4", "5", "6"])
+; === End of Disabled At The Moment ===
+
+global UnitBorder := MainUI.Add("GroupBox", "x808 y161 w550 h220 +Center Hidden" uiTheme[1], "Unit Configuration")
+global MinionSlot1 := MainUI.Add("CheckBox", "x825 y181 cffffff Hidden", "Slot 1 has minion")
+global MinionSlot2 := MainUI.Add("CheckBox", "x1015 y181 cffffff Hidden", "Slot 2 has minion")
+global MinionSlot3 := MainUI.Add("CheckBox", "x1200 y181 cffffff Hidden", "Slot 3 has minion")
+global MinionSlot4 := MainUI.Add("CheckBox", "x825 y206 cffffff Hidden", "Slot 4 has minion")
+global MinionSlot5 := MainUI.Add("CheckBox", "x1015 y206 cffffff Hidden", "Slot 5 has minion")
+global MinionSlot6 := MainUI.Add("CheckBox", "x1200 y206 cffffff Hidden", "Slot 6 has minion")
+
+global PlacementBorder := MainUI.Add("GroupBox", "x808 y225 w550 h155 +Center Hidden" uiTheme[1], "Unit Placement Configuration")
+global PlaceUntilSuccessful := MainUI.Add("CheckBox", "x825 y245 cffffff Hidden", "Attempt same placement spot until successful")
+global CheckIfSold := MainUI.Add("CheckBox", "x825 y270 cffffff Hidden", "Enable check to see if a unit was sold")
+global CheckIfSoldTimerText := MainUI.Add("Text", "x1115 y270 Hidden cffffff", "Timer:")
+global CheckIfSoldTimer := MainUI.Add("Edit", "x1165 y267 w40 h20 Hidden cBlack Number", "0")
+; === End Unit Config GUI ===
 
 GithubButton.OnEvent("Click", (*) => OpenGithub())
 DiscordButton.OnEvent("Click", (*) => OpenDiscord())
+;--------------SETTINGS--------------;
+global modeSelectionGroup := MainUI.Add("GroupBox", "x808 y38 w500 h45 +Center Background" uiTheme[2], "Game Mode Selection")
+MainUI.SetFont("s10 c" uiTheme[6])
+global ModeDropdown := MainUI.Add("DropDownList", "x818 y53 w140 h180 Choose0 +Center", ["Story", "Raid", "Event", "Custom"])
+global EventDropdown:= MainUI.Add("DropDownList", "x968 y53 w150 h180 Choose0 +Center Hidden", ["Summer Event", "CSM Event"])
+global EventDifficultyDropdown := MainUI.Add("DropDownList", "x1128 y53 w80 h180 Choose0 +Center Hidden Choose1", ["Easy", "Hard", "Hell"])
+global StoryDropdown := MainUI.Add("DropDownList", "x968 y53 w150 h180 Choose0 +Center Hidden", ["Large Village", "Hollow Land", "Monster City", "Academy Demon"])
+global StoryActDropdown := MainUI.Add("DropDownList", "x1128 y53 w80 h180 Choose0 +Center Hidden", ["Infinite", "Act 1", "Act 2", "Act 3", "Act 4", "Act 5", "Act 6"])
+global RaidDropdown := MainUI.Add("DropDownList", "x968 y53 w150 h180 Choose0 +Center Hidden", ["Lawless City", "Temple", "Orc Castle", "Kingdom of Wandenreich", "Namakora Village", "Central Command", "The Crimson Eclipse", "Hidden Leaf Village"])
+global RaidActDropdown := MainUI.Add("DropDownList", "x1128 y53 w80 h180 Choose0 +Center Hidden", ["Act 1"])
+global PortalDropdown := MainUI.Add("DropDownList", "x968 y53 w150 h180 Choose0 +Center Hidden", [""])
+global PortalRoleDropdown := MainUI.Add("DropDownList", "x1128 y53 w80 h180 Choose0 +Center Hidden", ["Solo", "Host", "Guest"])
+global ConfirmButton := MainUI.Add("Button", "x1218 y53 w80 h25", "Confirm")
 
-;--------------SETTINGS;--------------SETTINGS;--------------SETTINGS;--------------SETTINGS;--------------SETTINGS;--------------SETTINGS;--------------SETTINGS
-;--------------MODE SELECT;--------------MODE SELECT;--------------MODE SELECT;--------------MODE SELECT;--------------MODE SELECT;--------------MODE SELECT
-global modeSelectionGroup := aaMainUI.Add("GroupBox", "x808 y38 w500 h45 Background" uiTheme[2], "Mode Select")
-aaMainUI.SetFont("s10 c" uiTheme[6])
-global ModeDropdown := aaMainUI.Add("DropDownList", "x818 y53 w140 h180 Choose0 +Center", ["Story", "Raid", "Challenge", "Valentine's Event", "Custom"])
-global StoryDropdown := aaMainUI.Add("DropDownList", "x968 y53 w150 h180 Choose0 +Center", ["Large Village", "Hollow Land", "Monster City", "Academy Demon"])
-global StoryActDropdown := aaMainUI.Add("DropDownList", "x1128 y53 w80 h180 Choose0 +Center", ["Act 1", "Act 2", "Act 3", "Act 4", "Act 5", "Act 6", "Infinity"])
-global RaidDropdown := aaMainUI.Add("DropDownList", "x968 y53 w150 h180 Choose0 +Center", ["Lawless City", "Temple", "Orc Castle"])
-global RaidActDropdown := aaMainUI.Add("DropDownList", "x1128 y53 w80 h180 Choose0 +Center", ["Act 1"])
-global ConfirmButton := aaMainUI.Add("Button", "x1218 y53 w80 h25", "Confirm")
-
-StoryDropdown.Visible := false
-StoryActDropdown.Visible := false
-RaidDropdown.Visible := false
-RaidActDropdown.Visible := false
-MatchMaking.Visible := false
 ReturnLobbyBox.Visible := false
-NextLevelBox.Visible := false
 Hotkeytext.Visible := false
 Hotkeytext2.Visible := false
+Hotkeytext3.Visible := false
 ModeDropdown.OnEvent("Change", OnModeChange)
 StoryDropdown.OnEvent("Change", OnStoryChange)
 RaidDropdown.OnEvent("Change", OnRaidChange)
+EventDropdown.OnEvent("Change", OnEventChange)
 ConfirmButton.OnEvent("Click", OnConfirmClick)
-;------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI------MAIN UI
+;------MAIN UI------;
+
 ;------UNIT CONFIGURATION------UNIT CONFIGURATION------UNIT CONFIGURATION/------UNIT CONFIGURATION/------UNIT CONFIGURATION/------UNIT CONFIGURATION/
 
-AddUnitCard(aaMainUI, index, x, y) {
+AddUnitCard(MainUI, index, x, y) {
     unit := {}
- 
-    unit.Background := aaMainUI.Add("Text", Format("x{} y{} w550 h45 +Background{}", x, y, uiTheme[4]))
-    unit.BorderTop := aaMainUI.Add("Text", Format("x{} y{} w550 h2 +Background{}", x, y, uiTheme[3]))
-    unit.BorderBottom := aaMainUI.Add("Text", Format("x{} y{} w552 h2 +Background{}", x, y+45, uiTheme[3]))
-    unit.BorderLeft := aaMainUI.Add("Text", Format("x{} y{} w2 h45 +Background{}", x, y, uiTheme[3]))
-    unit.BorderRight := aaMainUI.Add("Text", Format("x{} y{} w2 h45 +Background{}", x+550, y, uiTheme[3]))
-    unit.BorderRight := aaMainUI.Add("Text", Format("x{} y{} w2 h45 +Background{}", x+250, y, uiTheme[3]))
-    aaMainUI.SetFont("s11 Bold c" uiTheme[1])
-    unit.Title := aaMainUI.Add("Text", Format("x{} y{} w60 h25 +BackgroundTrans", x+30, y+18), "Unit " index)
 
-    unit.Title := aaMainUI.Add("Text", Format("x{} y{} w250 h25 +BackgroundTrans", x+285, y+18), "Upgrade During Placement")
+    ; Helper for adding styled text
+    AddText(ctrlX, ctrlY, width, height, options := "", text := "") {
+        return MainUI.Add("Text", Format("x{} y{} w{} h{} {}", ctrlX, ctrlY, width, height, options), text)
+    }
 
-    aaMainUI.SetFont("s9 c" uiTheme[1])
-    unit.PlacementText := aaMainUI.Add("Text", Format("x{} y{} w70 h20 +BackgroundTrans", x+100, y+2), "Placement")
-    unit.PriorityText := aaMainUI.Add("Text", Format("x{} y{} w60 h20 BackgroundTrans", x+183, y+2), "Priority")
-    
+    ; Background and borders
+    unit.Background     := AddText(x, y, 550, 45, "+Background" uiTheme[4])
+    unit.BorderTop      := AddText(x, y, 550, 2, "+Background" uiTheme[3])
+    unit.BorderBottom   := AddText(x, y + 45, 552, 2, "+Background" uiTheme[3])
+    unit.BorderLeft     := AddText(x, y, 2, 45, "+Background" uiTheme[3])
+    unit.BorderRight    := AddText(x + 550, y, 2, 45, "+Background" uiTheme[3])
+    unit.BorderRight2   := AddText(x + 250, y, 2, 45, "+Background" uiTheme[3])
+    unit.BorderRight3   := AddText(x + 420, y, 2, 45, "+Background" uiTheme[3])
+
+    ; Main Labels
+    MainUI.SetFont("s11 Bold c" uiTheme[1])
+    unit.EnabledTitle   := AddText(x + 30, y + 18, 60, 25, "+BackgroundTrans", "Unit " index)
+
+    ; Unit Configuration
+    MainUI.SetFont("s9 c" uiTheme[1])
+    unit.PlacementText        := AddText(x + 90, y + 2, 80, 20, "+BackgroundTrans", "Placements")
+    unit.PriorityText         := AddText(x + 185, y + 2, 60, 20, "BackgroundTrans", "Priority")
+
+    MainUI.SetFont("s9 c" uiTheme[1])
+    unit.PlaceAndUpgradeText  := AddText(x + 261, y + 2, 250, 20, "BackgroundTrans", "Upgrade While Placing")
+    unit.UpgradeTitle         := AddText(x + 310, y + 20, 250, 25, "+BackgroundTrans", "Enabled")
+
+    if (!unitUpgradeLimitDisabled) {
+        unit.UpgradeCapText := AddText(x + 440, y + 2, 250, 20, "BackgroundTrans", "Upgrade Limit")
+        unit.UpgradeLimitTitle := AddText(x + 445, y + 20, 250, 25, "+BackgroundTrans", "Enabled")
+    }
+
     UnitData.Push(unit)
     return unit
 }
+
 
 ;Create Unit slot
 y_start := 85
 y_spacing := 50
 Loop 6 {
-    AddUnitCard(aaMainUI, A_Index, 808, y_start + ((A_Index-1)*y_spacing))
+    AddUnitCard(MainUI, A_Index, 808, y_start + ((A_Index-1)*y_spacing))
 }
 
-enabled1 := aaMainUI.Add("CheckBox", "x818 y105 w15 h15", "")
-enabled2 := aaMainUI.Add("CheckBox", "x818 y155 w15 h15", "")
-enabled3 := aaMainUI.Add("CheckBox", "x818 y205 w15 h15", "")
-enabled4 := aaMainUI.Add("CheckBox", "x818 y255 w15 h15", "")
-enabled5 := aaMainUI.Add("CheckBox", "x818 y305 w15 h15", "")
-enabled6 := aaMainUI.Add("CheckBox", "x818 y355 w15 h15", "")
+enabled1 := MainUI.Add("CheckBox", "x818 y105 w15 h15", "")
+enabled2 := MainUI.Add("CheckBox", "x818 y155 w15 h15", "")
+enabled3 := MainUI.Add("CheckBox", "x818 y205 w15 h15", "")
+enabled4 := MainUI.Add("CheckBox", "x818 y255 w15 h15", "")
+enabled5 := MainUI.Add("CheckBox", "x818 y305 w15 h15", "")
+enabled6 := MainUI.Add("CheckBox", "x818 y355 w15 h15", "")
 
-upgradeEnabled1 := aaMainUI.Add("CheckBox", "x1070 y105 w15 h15", "")
-upgradeEnabled2 := aaMainUI.Add("CheckBox", "x1070 y155 w15 h15", "")
-upgradeEnabled3 := aaMainUI.Add("CheckBox", "x1070 y205 w15 h15", "")
-upgradeEnabled4 := aaMainUI.Add("CheckBox", "x1070 y255 w15 h15", "")
-upgradeEnabled5 := aaMainUI.Add("CheckBox", "x1070 y305 w15 h15", "")
-upgradeEnabled6 := aaMainUI.Add("CheckBox", "x1070 y355 w15 h15", "")
+upgradeEnabled1 := MainUI.Add("CheckBox", "x1070 y105 w15 h15", "")
+upgradeEnabled2 := MainUI.Add("CheckBox", "x1070 y155 w15 h15", "")
+upgradeEnabled3 := MainUI.Add("CheckBox", "x1070 y205 w15 h15", "")
+upgradeEnabled4 := MainUI.Add("CheckBox", "x1070 y255 w15 h15", "")
+upgradeEnabled5 := MainUI.Add("CheckBox", "x1070 y305 w15 h15", "")
+upgradeEnabled6 := MainUI.Add("CheckBox", "x1070 y355 w15 h15", "")
 
-aaMainUI.SetFont("s8 c" uiTheme[6])
+upgradeLimitEnabled1 := MainUI.Add("CheckBox", "x1235 y105 w15 h15 " (unitUpgradeLimitDisabled ? "Hidden" : ""), "")
+upgradeLimitEnabled2 := MainUI.Add("CheckBox", "x1235 y155 w15 h15 " (unitUpgradeLimitDisabled ? "Hidden" : ""), "")
+upgradeLimitEnabled3 := MainUI.Add("CheckBox", "x1235 y205 w15 h15 " (unitUpgradeLimitDisabled ? "Hidden" : ""), "")
+upgradeLimitEnabled4 := MainUI.Add("CheckBox", "x1235 y255 w15 h15 " (unitUpgradeLimitDisabled ? "Hidden" : ""), "")
+upgradeLimitEnabled5 := MainUI.Add("CheckBox", "x1235 y305 w15 h15 " (unitUpgradeLimitDisabled ? "Hidden" : ""), "")
+upgradeLimitEnabled6 := MainUI.Add("CheckBox", "x1235 y355 w15 h15 " (unitUpgradeLimitDisabled ? "Hidden" : ""), "")
 
-; Mode selection dropdown
-PlacementSelection.OnEvent("Change", ToggleMode)
+MainUI.SetFont("s8 c" uiTheme[6])
 
 ; Placement dropdowns
-Placement1 := aaMainUI.Add("DropDownList", "x908 y105 w60 h180 Choose1 +Center", ["1","2","3","4","5","6"])
-Placement2 := aaMainUI.Add("DropDownList", "x908 y155 w60 h180 Choose1 +Center", ["1","2","3","4","5","6"])
-Placement3 := aaMainUI.Add("DropDownList", "x908 y205 w60 h180 Choose1 +Center", ["1","2","3","4","5","6"])
-Placement4 := aaMainUI.Add("DropDownList", "x908 y255 w60 h180 Choose1 +Center", ["1","2","3","4","5","6"])
-Placement5 := aaMainUI.Add("DropDownList", "x908 y305 w60 h180 Choose1 +Center", ["1","2","3","4","5","6"])
-Placement6 := aaMainUI.Add("DropDownList", "x908 y355 w60 h180 Choose1 +Center", ["1","2","3","4","5","6"])
+Placement1 := MainUI.Add("DropDownList", "x918 y105 w35 h180 Choose1 +Center", ["1","2","3","4","5","6"])
+Placement2 := MainUI.Add("DropDownList", "x918 y155 w35 h180 Choose1 +Center", ["1","2","3","4","5","6"])
+Placement3 := MainUI.Add("DropDownList", "x918 y205 w35 h180 Choose1 +Center", ["1","2","3","4","5","6"])
+Placement4 := MainUI.Add("DropDownList", "x918 y255 w35 h180 Choose1 +Center", ["1","2","3","4","5","6"])
+Placement5 := MainUI.Add("DropDownList", "x918 y305 w35 h180 Choose1 +Center", ["1","2","3","4","5","6"])
+Placement6 := MainUI.Add("DropDownList", "x918 y355 w35 h180 Choose1 +Center", ["1","2","3","4","5","6"])
 
-Priority1 := aaMainUI.Add("DropDownList", "x990 y105 w60 h180 Choose1 +Center", ["1","2","3","4","5","6"])
-Priority2 := aaMainUI.Add("DropDownList", "x990 y155 w60 h180 Choose1 +Center", ["1","2","3","4","5","6"])
-Priority3 := aaMainUI.Add("DropDownList", "x990 y205 w60 h180 Choose1 +Center", ["1","2","3","4","5","6"])
-Priority4 := aaMainUI.Add("DropDownList", "x990 y255 w60 h180 Choose1 +Center", ["1","2","3","4","5","6"])
-Priority5 := aaMainUI.Add("DropDownList", "x990 y305 w60 h180 Choose1 +Center", ["1","2","3","4","5","6"])
-Priority6 := aaMainUI.Add("DropDownList", "x990 y355 w60 h180 Choose1 +Center", ["1","2","3","4","5","6"])
+Priority1 := MainUI.Add("DropDownList", "x980 y105 w35 h180 Choose1 +Center", ["1","2","3","4","5","6"])
+Priority1.OnEvent("Change", (*) => OnPriorityChange("Placement", 1, Priority1.Value))
 
-ChallengePlacement1 := aaMainUI.Add("DropDownList", "x908 y105 w60 h180 Choose1 +Center Hidden", ["1","2","3","4","5","6"])
-ChallengePlacement2 := aaMainUI.Add("DropDownList", "x908 y155 w60 h180 Choose1 +Center Hidden", ["1","2","3","4","5","6"])
-ChallengePlacement3 := aaMainUI.Add("DropDownList", "x908 y205 w60 h180 Choose1 +Center Hidden", ["1","2","3","4","5","6"])
-ChallengePlacement4 := aaMainUI.Add("DropDownList", "x908 y255 w60 h180 Choose1 +Center Hidden", ["1","2","3","4","5","6"])
-ChallengePlacement5 := aaMainUI.Add("DropDownList", "x908 y305 w60 h180 Choose1 +Center Hidden", ["1","2","3","4","5","6"])
-ChallengePlacement6 := aaMainUI.Add("DropDownList", "x908 y355 w60 h180 Choose1 +Center Hidden", ["1","2","3","4","5","6"])
+Priority2 := MainUI.Add("DropDownList", "x980 y155 w35 h180 Choose2 +Center", ["1","2","3","4","5","6"])
+Priority2.OnEvent("Change", (*) => OnPriorityChange("Placement", 2, Priority2.Value))
 
-ChallengePriority1 := aaMainUI.Add("DropDownList", "x990 y105 w60 h180 Choose1 +Center Hidden", ["1","2","3","4","5","6"])
-ChallengePriority2 := aaMainUI.Add("DropDownList", "x990 y155 w60 h180 Choose1 +Center Hidden", ["1","2","3","4","5","6"])
-ChallengePriority3 := aaMainUI.Add("DropDownList", "x990 y205 w60 h180 Choose1 +Center Hidden", ["1","2","3","4","5","6"])
-ChallengePriority4 := aaMainUI.Add("DropDownList", "x990 y255 w60 h180 Choose1 +Center Hidden", ["1","2","3","4","5","6"])
-ChallengePriority5 := aaMainUI.Add("DropDownList", "x990 y305 w60 h180 Choose1 +Center Hidden", ["1","2","3","4","5","6"])
-ChallengePriority6 := aaMainUI.Add("DropDownList", "x990 y355 w60 h180 Choose1 +Center Hidden", ["1","2","3","4","5","6"])
+Priority3 := MainUI.Add("DropDownList", "x980 y205 w35 h180 Choose3 +Center", ["1","2","3","4","5","6"])
+Priority3.OnEvent("Change", (*) => OnPriorityChange("Placement", 3, Priority3.Value))
 
-ToggleMode(*) {
-    mode := PlacementSelection.Text
-    isChallenge := (mode = "Challenge")
-    Loop 6 {
-        Placement%A_Index%.Visible := !isChallenge
-        Priority%A_Index%.Visible := !isChallenge
-        ChallengePlacement%A_Index%.Visible := isChallenge
-        ChallengePriority%A_Index%.Visible := isChallenge
-    }
-}
-readInSettings()
-aaMainUI.Show("w1366 h700")
-WinMove(0, 0,,, "ahk_id " aaMainUIHwnd)
+Priority4 := MainUI.Add("DropDownList", "x980 y255 w35 h180 Choose4 +Center", ["1","2","3","4","5","6"])
+Priority4.OnEvent("Change", (*) => OnPriorityChange("Placement", 4, Priority4.Value))
+
+Priority5 := MainUI.Add("DropDownList", "x980 y305 w35 h180 Choose5 +Center", ["1","2","3","4","5","6"])
+Priority5.OnEvent("Change", (*) => OnPriorityChange("Placement", 5, Priority5.Value))
+
+Priority6 := MainUI.Add("DropDownList", "x980 y355 w35 h180 Choose6 +Center", ["1","2","3","4","5","6"])
+Priority6.OnEvent("Change", (*) => OnPriorityChange("Placement", 6, Priority6.Value))
+
+UpgradePriority1 := MainUI.Add("DropDownList", "x1020 y105 w35 h180 Choose1 +Center", ["1","2","3","4","5","6",""])
+UpgradePriority1.OnEvent("Change", (*) => OnPriorityChange("Upgrade", 1, UpgradePriority1.Text))
+
+UpgradePriority2 := MainUI.Add("DropDownList", "x1020 y155 w35 h180 Choose2 +Center", ["1","2","3","4","5","6",""])
+UpgradePriority2.OnEvent("Change", (*) => OnPriorityChange("Upgrade", 2, UpgradePriority2.Text))
+
+UpgradePriority3 := MainUI.Add("DropDownList", "x1020 y205 w35 h180 Choose3 +Center", ["1","2","3","4","5","6",""])
+UpgradePriority3.OnEvent("Change", (*) => OnPriorityChange("Upgrade", 3, UpgradePriority3.Text))
+
+UpgradePriority4 := MainUI.Add("DropDownList", "x1020 y255 w35 h180 Choose4 +Center", ["1","2","3","4","5","6",""])
+UpgradePriority4.OnEvent("Change", (*) => OnPriorityChange("Upgrade", 4, UpgradePriority4.Text))
+
+UpgradePriority5 := MainUI.Add("DropDownList", "x1020 y305 w35 h180 Choose5 +Center", ["1","2","3","4","5","6",""])
+UpgradePriority5.OnEvent("Change", (*) => OnPriorityChange("Upgrade", 5, UpgradePriority5.Text))
+
+UpgradePriority6 := MainUI.Add("DropDownList", "x1020 y355 w35 h180 Choose6 +Center", ["1","2","3","4","5","6",""])
+UpgradePriority6.OnEvent("Change", (*) => OnPriorityChange("Upgrade", 6, UpgradePriority6.Text))
+
+; Upgrade Limit
+UpgradeLimit1 := MainUI.Add("DropDownList", "x1310 y105 w45 h180 Choose1 +Center " (unitUpgradeLimitDisabled ? "Hidden" : ""), ["0","1","2","3","4","5","6","7","8","9"])
+UpgradeLimit2 := MainUI.Add("DropDownList", "x1310 y155 w45 h180 Choose1 +Center " (unitUpgradeLimitDisabled ? "Hidden" : ""), ["0","1","2","3","4","5","6","7","8","9"])
+UpgradeLimit3 := MainUI.Add("DropDownList", "x1310 y205 w45 h180 Choose1 +Center " (unitUpgradeLimitDisabled ? "Hidden" : ""), ["0","1","2","3","4","5","6","7","8","9"])
+UpgradeLimit4 := MainUI.Add("DropDownList", "x1310 y255 w45 h180 Choose1 +Center " (unitUpgradeLimitDisabled ? "Hidden" : ""), ["0","1","2","3","4","5","6","7","8","9"])
+UpgradeLimit5 := MainUI.Add("DropDownList", "x1310 y305 w45 h180 Choose1 +Center " (unitUpgradeLimitDisabled ? "Hidden" : ""), ["0","1","2","3","4","5","6","7","8","9"])
+UpgradeLimit6 := MainUI.Add("DropDownList", "x1310 y355 w45 h180 Choose1 +Center " (unitUpgradeLimitDisabled ? "Hidden" : ""), ["0","1","2","3","4","5","6","7","8","9"])
+
+LoadUnitSettingsByMode()
+MainUI.Show("w1366 h700")
+WinMove(0, 0,,, "ahk_id " MainUIHwnd)
 forceRobloxSize()  ; Initial force size and position
 SetTimer(checkRobloxSize, 600000)  ; Check every 10 minutes
-;------UNIT CONFIGURATION ;------UNIT CONFIGURATION ;------UNIT CONFIGURATION ;------UNIT CONFIGURATION ;------UNIT CONFIGURATION ;------UNIT CONFIGURATION ;------UNIT CONFIGURATION
-;------FUNCTIONS;------FUNCTIONS;------FUNCTIONS;------FUNCTIONS;------FUNCTIONS;------FUNCTIONS;------FUNCTIONS;------FUNCTIONS;------FUNCTIONS;------FUNCTIONS;------FUNCTIONS
+;------FUNCTIONS------;
 
-;Process text
-AddToLog(current) { 
-    global process1, process2, process3, process4, process5, process6, process7, currentOutputFile, lastlog
+AddToLog(current) {
+    global processList, currentOutputFile, lastlog
+    global WebhookLogsEnabled, WebhookEnabled
 
-    ; Remove arrow from all lines first
-    process7.Value := StrReplace(process6.Value, "➤ ", "")
-    process6.Value := StrReplace(process5.Value, "➤ ", "")
-    process5.Value := StrReplace(process4.Value, "➤ ", "")
-    process4.Value := StrReplace(process3.Value, "➤ ", "")
-    process3.Value := StrReplace(process2.Value, "➤ ", "")
-    process2.Value := StrReplace(process1.Value, "➤ ", "")
-    
-    ; Add arrow only to newest process
-    process1.Value := "➤ " . current
-    
+    ; Shift values downward and remove arrows
+    loop processList.Length {
+        i := processList.Length - A_Index + 1
+        if (i > 1)
+            processList[i].Value := StrReplace(processList[i - 1].Value, "➤ ", "")
+    }
+
+    ; Add new entry to the top
+    processList[1].Value := "➤ " . current
+
+    ; Optional: Log to file
     elapsedTime := getElapsedTime()
     Sleep(50)
-    FileAppend(current . " " . elapsedTime . "`n", currentOutputFile)
 
-    ; Add webhook logging
+    ; Remove emojis from the log string
+    cleanCurrent := CleanString(current)
+
+    ; Optional: Log to file
+    elapsedTime := getElapsedTime()
+    Sleep(50)
+    FileAppend(cleanCurrent . " " . elapsedTime . "`n", currentOutputFile)
+
+    ; Store last log and optionally send webhook
     lastlog := current
-    if FileExist("Settings\SendActivityLogs.txt") {
-        SendActivityLogsStatus := FileRead("Settings\SendActivityLogs.txt", "UTF-8")
-        if (SendActivityLogsStatus = "1") {
-            WebhookLog()
-        }
-    }
+    if (WebhookLogsEnabled.Value && WebhookEnabled.Value)
+        WebhookLog()
 }
 
 ;Timer
@@ -419,30 +573,30 @@ getElapsedTime() {
 
 sizeDown() {
     global rblxID
-    
     if !WinExist(rblxID)
         return
 
+    WinActivate(rblxID)
     WinGetPos(&X, &Y, &OutWidth, &OutHeight, rblxID)
-    
-    ; Exit fullscreen if needed
+
     if (OutWidth >= A_ScreenWidth && OutHeight >= A_ScreenHeight) {
         Send "{F11}"
-        Sleep(100)
+        Sleep(150)
     }
 
-    ; Force the window size and retry if needed
     Loop 3 {
         WinMove(X, Y, targetWidth, targetHeight, rblxID)
         Sleep(100)
         WinGetPos(&X, &Y, &OutWidth, &OutHeight, rblxID)
         if (OutWidth == targetWidth && OutHeight == targetHeight)
-            break
+            return
     }
+
+    AddToLog("Failed to resize Roblox window")
 }
 
 moveRobloxWindow() {
-    global aaMainUIHwnd, offsetX, offsetY, rblxID
+    global MainUIHwnd, offsetX, offsetY, rblxID
     
     if !WinExist(rblxID) {
         AddToLog("Waiting for Roblox window...")
@@ -453,7 +607,7 @@ moveRobloxWindow() {
     sizeDown()
     
     ; Then move relative to main UI
-    WinGetPos(&x, &y, &w, &h, aaMainUIHwnd)
+    WinGetPos(&x, &y, &w, &h, MainUIHwnd)
     WinMove(x + offsetX, y + offsetY,,, rblxID)
     WinActivate(rblxID)
 }
@@ -481,6 +635,7 @@ forceRobloxSize() {
     sizeDown()
     moveRobloxWindow()
 }
+
 ; Function to periodically check window size
 checkRobloxSize() {
     global rblxID
@@ -490,16 +645,6 @@ checkRobloxSize() {
             sizeDown()
             moveRobloxWindow()
         }
-    }
-}
-;Basically the code to move roblox, Above
-
-OnSettingsGuiClose(*) {
-    global settingsGuiOpen, SettingsGUI
-    settingsGuiOpen := false
-    if SettingsGUI {
-        SettingsGUI.Destroy()
-        SettingsGUI := ""  ; Clear the GUI reference
     }
 }
 
@@ -513,9 +658,27 @@ checkSizeTimer() {
     }
 }
 
-StartClickCapture() {
-    global waitingForClick
-    waitingForClick := true
+StartCoordCapture() {
+    global savedCoords
+    global placement1, placement2, placement3, placement4, placement5, placement6
+
+    presetIndex := PlacementProfiles.Value
+
+    ; Retrieve values from dropdowns
+    totalEnabled := placement1.Value + placement2.Value + placement3.Value + placement4.Value + placement5.Value + placement6.Value
+
+    ; Stop coordinate capture if the max total is reached
+    if savedCoords[presetIndex].Length >= totalEnabled {
+        AddToLog("Max total coordinates reached. Stopping coordinate capture.")
+        return
+    }
+
+    if (WinExist(rblxID)) {
+        WinActivate(rblxID)
+    }
+
+    AddWaitingFor("Custom Coords")
+    AddToLog("Press LShift to stop coordinate capture")
     SetTimer UpdateTooltip, 50  ; Update tooltip position every 50ms
 }
 
@@ -523,32 +686,126 @@ UpdateTooltip() {
     global waitingForClick
     if waitingForClick {
         MouseGetPos &x, &y
-        ToolTip "Click anywhere to save coordinates...", x + 10, y + 10  ; Offset tooltip slightly
+        ToolTip "Click anywhere to save coordinates...", x + 5, y - 5  ; Offset tooltip slightly
     } else {
         ToolTip()  ; Hide tooltip when not waiting
         SetTimer UpdateTooltip, 0  ; Stop the timer
     }
 }
 
+~LShift::
+{
+    global waitingForClick, walkStartTime
+    if waitingForClick {
+        AddToLog("Stopping coordinate capture")
+        if (WaitingFor("Walk")) {
+            walkStartTime := 0
+        }
+        RemoveWaiting()
+        ShowPlacements(false)
+    }
+}
+
 ~LButton::
 {
     global waitingForClick, savedCoords
+    global savedWalkCoords, walkStartTime
+    global nukeCoords
+    global placement1, placement2, placement3, placement4, placement5, placement6
+
+    if !scriptInitialized
+        return
+
     if waitingForClick {
-        ; Wait for the button press and get the position when the mouse button is clicked
-        MouseGetPos &x, &y
-        waitingForClick := false
-        SetTimer UpdateTooltip, 0  ; Stop updating tooltip immediately
+        if (WaitingFor("Walk")) {
+            presetIndex := PlacementProfiles.Value
 
-        if !IsSet(savedCoords)  ; Ensure savedCoords is initialized
-            savedCoords := []
-        savedCoords.Push({x: x, y: y - 25})  ; Store as an object
+            if (presetIndex < 1)
+            {
+                if (debugMessages) {
+                    AddToLog("⚠️ Invalid preset index: " presetIndex)
+                }
+                return
+            }
 
-        ToolTip("Coordinates added: " x ", " y, x + 10, y + 10)  ; Show tooltip
-        AddToLog("📌 Saved Coordinates → X: " x ", Y: " y)
+            MouseGetPos(&x, &y)
+            SetTimer(UpdateTooltip, 0)
 
-        ; Ensure tooltip disappears properly by resetting and manually clearing it
-        SetTimer ClearToolTip, -1200
+            ; === Delay handling ===
+            if (!walkStartTime) {
+                walkStartTime := A_TickCount
+                delay := 0
+            } else {
+                delay := A_TickCount - walkStartTime
+                walkStartTime := A_TickCount ; Reset for next click
+            }
+
+            coords := GetOrInitWalkCoords(presetIndex)
+            coords.Push({x: x, y: y, delay: delay}) ; Store delay with coords
+            savedWalkCoords[presetIndex] := coords
+
+            ToolTip("Coords Set: " coords.Length, x + 10, y + 10)
+            delaySeconds := Round(delay / 1000, 1)
+            AddToLog("📌 [Preset: " PlacementProfiles.Text "] Saved → X: " x ", Y: " y ", Delay: " delaySeconds "s | Set: " coords.Length)
+            SetTimer(ClearToolTip, -1200)
+            ; Test Walk
+            FixClick(x, y, "Right")
+        }
+        else if (WaitingFor("Nuke")) {
+            MouseGetPos(&x, &y)
+            SetTimer(UpdateTooltip, 0)
+            nukeCoords := {x: x, y: y}
+            ToolTip("Nuke Coords Set", x + 10, y + 10)
+            AddToLog("📌 Nuke Ability Coordinates Saved → X: " x ", Y: " y)
+            SetTimer(ClearToolTip, -1200)
+            RemoveWaiting()
+        }
+        else {
+            presetIndex := PlacementProfiles.Value
+
+            if (presetIndex < 1)
+            {
+                if (debugMessages) {
+                    AddToLog("⚠️ Invalid preset index: " presetIndex)
+                }
+                return
+            }
+
+            totalEnabled := placement1.Value + placement2.Value + placement3.Value + placement4.Value + placement5.Value + placement6.Value
+
+            MouseGetPos(&x, &y)
+            SetTimer(UpdateTooltip, 0)
+
+            ; Use your function here
+            coords := GetOrInitPresetCoords(presetIndex)
+            coords.Push({x: x, y: y})
+            savedCoords[presetIndex] := coords  ; Not strictly needed, but OK for clarity
+
+            ToolTip("Coords Set: " coords.Length " / Total Enabled: " totalEnabled, x + 10, y + 10)
+            AddToLog("📌 [Preset: " PlacementProfiles.Text "] Saved → X: " x ", Y: " y " | Set: " coords.Length " / Enabled: " totalEnabled)
+            SetTimer(ClearToolTip, -1200)
+
+            if coords.Length >= totalEnabled {
+                AddToLog("✅ [Preset " PlacementProfiles.Text "] All coordinates set, stopping capture.")
+                RemoveWaiting()
+            }
+        }
     }
+}
+
+GetOrInitPresetCoords(index) {
+    global savedCoords
+    if !IsObject(savedCoords)
+        savedCoords := []
+
+    ; Extend the array up to the index if needed
+    while (savedCoords.Length < index)
+        savedCoords.Push([])
+
+    if !IsObject(savedCoords[index])
+        savedCoords[index] := []
+
+    return savedCoords[index]
 }
 
 ClearToolTip() {
@@ -557,13 +814,171 @@ ClearToolTip() {
     ToolTip()  ; Redundant clear to catch edge cases
 }
 
-DeleteSavedCoords() {
+DeleteCoordsForPreset(index) {
     global savedCoords
 
-    if (IsSet(savedCoords) && savedCoords.Length > 0) {
-        savedCoords := []  ; Clear the saved coordinates list
-        AddToLog("🗑️ All saved coordinates have been cleared.")
+    ; Ensure savedCoords is initialized as an object
+    if !IsObject(savedCoords)
+        savedCoords := []
+
+    ; Extend the array up to the index if needed
+    while (savedCoords.Length < index)
+        savedCoords.Push([])
+
+    ; Check if the preset has coordinates (i.e., non-empty)
+    if (savedCoords[index].Length > 0) {
+        savedCoords[index] := []  ; Clear the coordinates for the specified preset
+        AddToLog("🗑️ Cleared coordinates for Preset: " PlacementProfiles.Text)
     } else {
-        AddToLog("⚠️ No saved coordinates to clear.")
+        AddToLog("⚠️ No coordinates to clear for Preset: " PlacementProfiles.Text)
     }
+}
+
+InitControlGroups() {
+    global ControlGroups
+
+    ControlGroups["Default"] := []
+
+    Blacklist := ["upgradeLimitEnabled", "upgradeLimit"]
+
+    for name in ["Placement", "enabled", "priority", "upgradePriority", "upgradeEnabled", "upgradeLimitEnabled", "upgradeLimit"] {
+        loop 6 {
+            varName := name . A_Index
+            baseName := RegExReplace(varName, "\d+$")
+            
+            ; Check if baseName is in Blacklist manually
+            isBlacklisted := false
+            for index, item in Blacklist {
+                if (item = baseName) {
+                    isBlacklisted := true
+                    break
+                }
+            }
+            
+            if (isBlacklisted)
+                continue
+
+            if IsSet(%varName%)  ; Check if the variable exists
+                ControlGroups["Default"].Push(%varName%)
+            else
+                AddToLog("Variable " . varName . " does not exist!")
+        }
+    }
+
+    ControlGroups["Settings"] := [
+        WebhookBorder, WebhookEnabled, WebhookLogsEnabled, WebhookURLBox,
+        PrivateSettingsBorder, PrivateServerEnabled, PrivateServerURLBox, PrivateServerTestButton, MatchmakingFailsafe, MatchmakingFailsafeTimer, MatchmakingFailsafeTimerText,
+        KeybindBorder, F1Text, F1Box, F2Text, F2Box, F3Text, F3Box, F4Text, F4Box, keybindSaveBtn,
+        ZoomSettingsBorder, ZoomText, ZoomBox,
+        MiscSettingsBorder, UnitConfigText, UnitImportButton, UnitExportButton, CustomPlacementText, CustomPlacementImportButton, CustomPlacementExportButton
+    ]
+
+    ControlGroups["Upgrade"] := [
+        UpgradeBorder, UnitManagerUpgradeSystem, PriorityUpgrade,
+        AutoUpgradeBorder, AutoUpgrade
+    ]
+
+    ControlGroups["Mode"] := [
+        ModeBorder, ModeConfigurations,
+        StoryBorder, StoryDifficultyText, StoryDifficulty
+    ]
+
+    ControlGroups["Unit"] := [
+        UnitBorder,
+        NukeBorder, NukeUnitSlotEnabled, NukeUnitSlot, NukeCoordinatesText, NukeCoordinatesButton, NukeAtSpecificWave, NukeWave, NukeDelayText, NukeDelay,
+        MinionSlot1, MinionSlot2, MinionSlot3, MinionSlot4, MinionSlot5, MinionSlot6,
+        PlacementBorder, PlaceUntilSuccessful, CheckIfSold, CheckIfSoldTimerText, CheckIfSoldTimer
+    ]
+}
+
+
+ShowOnlyControlGroup(groupName) {
+    global ControlGroups
+    if !ControlGroups.Has(groupName) {
+        AddToLog("Invalid control group: " groupName)
+        return
+    }
+
+    for name, groupControls in ControlGroups {
+        shouldShow := (name = groupName)
+        for ctrl in groupControls {
+            if IsObject(ctrl)
+                ctrl.Visible := shouldShow
+        }
+    }
+}
+
+ToggleControlGroup(groupName) {
+    global ActiveControlGroup
+    if (ActiveControlGroup = groupName) {
+        ShowOnlyControlGroup("Default")
+        ActiveControlGroup := ""
+        AddToLog("Displaying: Default UI")
+        SetUnitCardVisibility(true)
+    } else {
+        ShowOnlyControlGroup(groupName)
+        ActiveControlGroup := groupName
+        AddToLog("Displaying: " (groupName = "Settings" ? "Settings UI" : groupName " Settings UI"))
+        SetUnitCardVisibility(false)
+    }
+}
+
+SetUnitCardVisibility(visible) {
+    for _, unit in UnitData {
+        for _, ctrl in unit.OwnProps() {
+            if IsObject(ctrl)
+                ctrl.Visible := visible
+        }
+    }
+
+    for name in ["Placement", "enabled", "upgradeEnabled", "Priority"] {
+        loop 6 {
+            ctrl := %name%%A_Index%
+            if IsObject(ctrl)
+                ctrl.Visible := visible
+        }
+    }
+}
+
+ValidateWebhook() {
+    url := WebhookURLBox.Value
+    
+    if (url == "") {
+        WebhookEnabled.Value := false
+        WebhookURLBox.Value := ""
+        MsgBox("Webhook URL cannot be blank. Please enter a valid Webhook URL.", "Missing URL", "+0x1000")
+        return
+    }
+    
+    if (!RegExMatch(url, "^https://discord\.com/api/webhooks/.*")) {
+        WebhookEnabled.Value := false
+        WebhookURLBox.Value := ""
+        MsgBox("Invalid Webhook URL! Please ensure it follows the correct format.", "Invalid URL", "+0x1000")
+        return
+    }
+}
+
+ValidateEditBox(ctrl) {
+    val := Trim(ctrl.Value)
+    ; If the input is not a number, reset to 0
+    if !IsInteger(val)
+    {
+        ctrl.Value := "0"
+        return
+    }
+
+    ; Convert to integer
+    num := Integer(val)
+
+    if (num < 0)
+        ctrl.Value := "0"
+
+    if (ctrl == ZoomBox) {
+        if (num > 20)
+            ctrl.Value := "20"  ; Limit to a maximum of 20
+    }
+}
+
+OpenCoordinateEditor() {
+    
 }
