@@ -1,7 +1,6 @@
 #Requires AutoHotkey v2.0
 
 UpgradeUnits() {
-    global stage
     global successfulCoordinates, maxedCoordinates
 
     if (ShouldOpenUnitManager()) {
@@ -42,7 +41,7 @@ UpgradeWithPriority() {
         for priorityNum in priorityOrder {
             for slot in slotOrder {
                 if (HasUnitsInSlot(slot, priorityNum, successfulCoordinates)) {
-                    AddToLog("Upgrading priority " priorityNum)
+                    AddToLog("Starting upgrades for priority " priorityNum " (slot " slot ")")
                     ProcessUpgrades(slot, priorityNum)
                 }
             }
@@ -57,6 +56,7 @@ UpgradeWithPriority() {
             }
         }
     }
+
     AddToLog("All units maxed, proceeding to monitor stage")
     CloseMenu("Unit Manager")
 }
@@ -175,7 +175,7 @@ UnitManagerUpgradeWithLimit(coord, index, upgradeLimit) {
 }
 
 ProcessUpgrades(slot := false, priorityNum := false, singlePass := false) {
-    global successfulCoordinates, UnitManagerUpgradeSystem, pausePlacementTracking
+    global successfulCoordinates, UnitManagerUpgradeSystem
 
     if (singlePass) {
         for index, coord in successfulCoordinates {
@@ -230,13 +230,11 @@ ProcessUpgrades(slot := false, priorityNum := false, singlePass := false) {
 
                 PostUpgradeChecks(coord)
 
-                if (MaxUpgrade() && !pausePlacementTracking) {
+                if (MaxUpgrade()) {
                     HandleMaxUpgrade(coord, index)
                 }
 
-                if (!UnitManagerUpgradeSystem.Value) {
-                    FixClick(341, 226)
-                }
+                FixClick(341, 226)
 
                 PostUpgradeChecks(coord)
             }
@@ -250,67 +248,6 @@ ProcessUpgrades(slot := false, priorityNum := false, singlePass := false) {
         if (!slot && !priorityNum)
             break
     }
-}
-
-UpgradePlacedUnits() {
-    global stage
-    global successfulCoordinates, maxedCoordinates
-    global totalUnits := Map(), upgradedCount := Map()
-
-    hasUpgradeableUnits := false
-
-    ; Check if there are any units eligible for upgrading
-    for coord in successfulCoordinates {
-        totalUnits[coord.slot] := (totalUnits.Has(coord.slot) ? totalUnits[coord.slot] + 1 : 1)
-        upgradedCount[coord.slot] := upgradedCount.Has(coord.slot) ? upgradedCount[coord.slot] : 0
-
-        if (IsUpgradeEnabled(coord.slot) && !maxedCoordinates.Has(coord)) {
-            hasUpgradeableUnits := true
-        }
-    }
-
-    ; If no upgradeable units found, skip the rest
-    if (!hasUpgradeableUnits) {
-        return
-    }
-
-    AddToLog("Initiating Single-Pass Unit Upgrades...")
-    stage := "Upgrading"
-
-    if (ShouldOpenUnitManager()) {
-        OpenMenu("Unit Manager")
-    }
-
-    if (PriorityUpgrade.Value) {
-        AddToLog("Using priority upgrade system (single pass)")
-        for priorityNum in [1, 2, 3, 4, 5, 6] {
-            for slot in [1, 2, 3, 4, 5, 6] {
-                if (!IsUpgradeEnabled(slot))
-                    continue
-
-                priority := "priority" slot
-                priority := %priority%
-
-                if (priority.Text = priorityNum && HasUnitsInSlot(slot, priorityNum, successfulCoordinates)) {
-                    AddToLog("Processing upgrades for priority " priorityNum " (slot " slot ")")
-                    ProcessUpgrades(slot, priorityNum, true) ; true = single pass
-                }
-            }
-        }
-    } else {
-        seenSlots := Map()
-        for coord in successfulCoordinates {
-            if (!IsUpgradeEnabled(coord.slot))
-                continue
-
-            if (!seenSlots.Has(coord.slot)) {
-                ProcessUpgrades(coord.slot, "", true)
-                seenSlots[coord.slot] := true
-            }
-        }
-    }
-
-    AddToLog("Upgrade attempt completed")
 }
 
 WaitForUpgradeText(timeout := 4500) {
@@ -445,12 +382,6 @@ HasUnitsInSlot(slot, priorityNum, coordinates) {
 ShouldOpenUnitManager() {
     if (UnitManagerUpgradeSystem.Value) {
         return true
-    }
-}
-
-HandleAutoUpgrade() {
-    if (AutoUpgrade.Value) {
-        FixClick(136, 293)
     }
 }
 

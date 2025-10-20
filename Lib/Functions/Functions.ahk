@@ -281,7 +281,7 @@ Teleport(mode := "") {
     FixClick(250, 276)
     Sleep 500
     FixClick(303, 317)
-    Sleep(1000)
+    Sleep(1500)
 }
 
 Scroll(times, direction, delay) {
@@ -322,25 +322,49 @@ CloseLobbyPopups() {
     Sleep(500)
 }
 
-ClickUnit(slot) {
+ClickUnit(slot, autoUpgrade := false) {
+    global successfulCoordinates
     global totalUnits
-    baseX := 635
-    baseY := 120
-    colSpacing := 60
-    rowSpacing := 90
-    maxCols := 3
 
-    totalCount := 0
-    for _, count in totalUnits {
-        totalCount += count
+    if (autoUpgrade) {
+        ; Find the matching entry for this slot
+        coord := ""
+        for index, coordObj in successfulCoordinates {
+            if (coordObj.slot == slot) {
+                coord := coordObj
+                break
+            }
+        }
+
+        ; Use placementIndex instead of slot
+        placementIndex := coord.placementIndex
+
+        baseX := 650
+        baseY := 175
+        colSpacing := 65
+        rowSpacing := 95
+        maxCols := 3
+
+        index := placementIndex - 1
+        row := Floor(index / maxCols)
+        colInRow := Mod(index, maxCols)
+
+        clickX := baseX + (colInRow * colSpacing)
+        clickY := baseY + (row * rowSpacing)
+    } else {
+        baseX := 635
+        baseY := 120
+        colSpacing := 60
+        rowSpacing := 90
+        maxCols := 3
+
+        index := slot - 1
+        row := Floor(index / maxCols)
+        colInRow := Mod(index, maxCols)
+
+        clickX := baseX + (colInRow * colSpacing)
+        clickY := baseY + (row * rowSpacing)
     }
-
-    index := slot - 1
-    row := Floor(index / maxCols)
-    colInRow := Mod(index, maxCols)
-
-    clickX := baseX + (colInRow * colSpacing)
-    clickY := baseY + (row * rowSpacing)
 
     OpenMenu("Unit Manager")
     Sleep(500)
@@ -348,6 +372,7 @@ ClickUnit(slot) {
     FixClick(clickX, clickY)
     Sleep(150)
 }
+
 
 
 GetAutoAbilityTimer() {
@@ -755,7 +780,7 @@ ClearPreviewDots() {
 
 HandleWaveSelection() {
     while (isMenuOpen("Wave Selection")) {
-       result := FindText(&X, &Y, 0, 0, A_ScreenHeight, A_ScreenWidth, 0.50, 0.50, SuperFastWave)
+       result := FindText(&X, &Y, 0, 0, A_ScreenHeight, A_ScreenWidth, 0.10, 0.50, SuperFastWave)
        if (result) {
             FixClick(630, 315)
             Sleep(200)

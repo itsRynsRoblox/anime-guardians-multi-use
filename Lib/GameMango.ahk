@@ -10,7 +10,7 @@ Hotkey(F3Key, (*) => Reload())
 Hotkey(F4Key, (*) => TogglePause())
 
 F5:: {
-
+    HandleWaveSelection()
 }
 
 F6:: {
@@ -325,7 +325,6 @@ HandleAutoAbility(slot) {
         return
 
     if (NukeUnitSlotEnabled.Value && slot = NukeUnitSlot.Value) {
-        AddToLog("Nuking unit in slot " slot)
         return
     }
 
@@ -637,7 +636,7 @@ isMenuOpen(name := "") {
         return FindText(&X, &Y, 600, 586, 685, 617, 0.20, 0.20, UnitManager) or FindText(&X, &Y, 600, 586, 685, 617, 0.20, 0.20, UnitManagerGameOver)
     }
     else if (name = "Raids") {
-        return FindText(&X, &Y, 546, 456, 633, 479, 0.20, 0.20, Raids)
+        return FindText(&X, &Y, 160, 193, 243, 235, 0.20, 0.20, Raids)
     }
     else if (name = "Story") {
         return GetPixel(0x8F78D1, 262, 217, 2, 2, 5)
@@ -649,7 +648,7 @@ isMenuOpen(name := "") {
         return FindText(&X, &Y, 231, 247, 315, 287, 0.20, 0.20, JoinMatchmaking)
     }
     else if (name = "Wave Selection") {
-        return FindText(&X, &Y, 0, 0, A_ScreenHeight, A_ScreenWidth, 0.50, 0.50, SuperFastWave)
+        return FindText(&X, &Y, 0, 0, A_ScreenHeight, A_ScreenWidth, 0.10, 0.50, SuperFastWave)
     }
     else if (name = "Summer Event") {
         return FindText(&X, &Y, 179, 217, 260, 248, 0.20, 0.20, SummerEvent)

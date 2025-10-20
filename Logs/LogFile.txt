@@ -1,4 +1,294 @@
 
-==Ryn's Anime Guardians Macro v1.0==
-Start Time: [9:20:06 PM]
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [9:42:32 PM]
 Settings successfully loaded for mode: Default 00:00
+Found Roblox window 00:10
+Displaying: Mode Settings UI 00:14
+Saved settings for mode: Default 00:16
+Displaying: Default UI 00:18
+Settings successfully loaded for mode: Story 00:19
+No configuration found for mode: Event 00:21
+Saved settings for mode: Event 00:21
+Settings successfully loaded for mode: Story 00:46
+Settings successfully loaded for mode: Event 00:49
+No configuration found for mode: Raid 00:51
+Saved settings for mode: Raid 00:51
+Saved settings for mode: Raid 00:54
+Settings successfully loaded for mode: Story 00:58
+Settings successfully loaded for mode: Event 00:59
+Settings successfully loaded for mode: Story 01:00
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [9:44:16 PM]
+Settings successfully loaded for mode: Default 00:00
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [9:44:49 PM]
+No configuration found for mode: Default 00:00
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [9:45:26 PM]
+No configuration found for mode: Default 00:00
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [9:48:44 PM]
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [9:48:59 PM]
+No configuration found for mode: Default 00:00
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [9:49:07 PM]
+No configuration found for mode: Default 00:00
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [9:51:04 PM]
+No configuration found for mode: Default 00:00
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [9:51:20 PM]
+No configuration found for mode: Default 00:00
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [9:54:11 PM]
+No configuration found for mode: Default 00:00
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [10:00:18 PM]
+No configuration found for mode: Default 00:00
+Saving settings for mode: Default 00:00
+File to save: C:\Users\rften\OneDrive\Documents\GitHub\anime-guardians-multi-use\Settings\Modes\Default_Configuration.txt 00:00
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [10:01:54 PM]
+No configuration found for mode: Default 00:00
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [10:02:47 PM]
+No configuration found for mode: Default 00:00
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [10:03:49 PM]
+No configuration found for mode: Default 00:00
+Added setting: Enabled1 = 0 00:00
+Added setting: Enabled2 = 0 00:00
+Added setting: Enabled3 = 0 00:00
+Added setting: Enabled4 = 0 00:00
+Added setting: Enabled5 = 0 00:00
+Added setting: Enabled6 = 0 00:00
+Added setting: Placement1 = 1 00:00
+Added setting: Placement2 = 1 00:01
+Added setting: Placement3 = 1 00:01
+Added setting: Placement4 = 1 00:01
+Added setting: Placement5 = 1 00:01
+Added setting: Placement6 = 1 00:01
+Added setting: Priority1 = 1 00:01
+Added setting: Priority2 = 2 00:01
+Added setting: Priority3 = 3 00:01
+Added setting: Priority4 = 4 00:01
+Added setting: Priority5 = 5 00:01
+Added setting: Priority6 = 6 00:02
+Added setting: UpgradePriority1 = 1 00:02
+Added setting: UpgradePriority2 = 2 00:02
+Added setting: UpgradePriority3 = 3 00:02
+Added setting: UpgradePriority4 = 4 00:02
+Added setting: UpgradePriority5 = 5 00:02
+Added setting: UpgradePriority6 = 6 00:02
+Added setting: UpgradeEnabled1 = 0 00:02
+Added setting: UpgradeEnabled2 = 0 00:02
+Added setting: UpgradeEnabled3 = 0 00:02
+Added setting: UpgradeEnabled4 = 0 00:02
+Added setting: UpgradeEnabled5 = 0 00:03
+Added setting: UpgradeEnabled6 = 0 00:03
+Added setting: UpgradeLimit1 = 0 00:03
+Added setting: UpgradeLimit2 = 0 00:03
+Added setting: UpgradeLimit3 = 0 00:03
+Added setting: UpgradeLimit4 = 0 00:03
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [10:03:52 PM]
+No configuration found for mode: Default 00:00
+Added setting: Enabled1 = 0 00:00
+Added setting: Enabled2 = 0 00:00
+Added setting: Enabled3 = 0 00:00
+Added setting: Enabled4 = 0 00:00
+Added setting: Enabled5 = 0 00:00
+Added setting: Enabled6 = 0 00:00
+Added setting: Placement1 = 1 00:01
+Added setting: Placement2 = 1 00:01
+Added setting: Placement3 = 1 00:01
+Added setting: Placement4 = 1 00:01
+Added setting: Placement5 = 1 00:01
+Added setting: Placement6 = 1 00:01
+Added setting: Priority1 = 1 00:01
+Added setting: Priority2 = 2 00:01
+Added setting: Priority3 = 3 00:01
+Added setting: Priority4 = 4 00:01
+Added setting: Priority5 = 5 00:02
+Added setting: Priority6 = 6 00:02
+Added setting: UpgradePriority1 = 1 00:02
+Added setting: UpgradePriority2 = 2 00:02
+Added setting: UpgradePriority3 = 3 00:02
+Added setting: UpgradePriority4 = 4 00:02
+Added setting: UpgradePriority5 = 5 00:02
+Added setting: UpgradePriority6 = 6 00:02
+Added setting: UpgradeEnabled1 = 0 00:02
+Added setting: UpgradeEnabled2 = 0 00:02
+Added setting: UpgradeEnabled3 = 0 00:02
+Added setting: UpgradeEnabled4 = 0 00:03
+Added setting: UpgradeEnabled5 = 0 00:03
+Added setting: UpgradeEnabled6 = 0 00:03
+Added setting: UpgradeLimit1 = 0 00:03
+Added setting: UpgradeLimit2 = 0 00:03
+Added setting: UpgradeLimit3 = 0 00:03
+Added setting: UpgradeLimit4 = 0 00:03
+Added setting: UpgradeLimit5 = 0 00:03
+Added setting: UpgradeLimit6 = 0 00:03
+Added setting: UpgradeLimitEnabled1 = 0 00:03
+Added setting: UpgradeLimitEnabled2 = 0 00:03
+Added setting: UpgradeLimitEnabled3 = 0 00:04
+Added setting: UpgradeLimitEnabled4 = 0 00:04
+Added setting: UpgradeLimitEnabled5 = 0 00:04
+Added setting: UpgradeLimitEnabled6 = 0 00:04
+Added setting: Enabled1 = 0 00:08
+Added setting: Enabled2 = 0 00:08
+Added setting: Enabled3 = 0 00:08
+Added setting: Enabled4 = 0 00:08
+Added setting: Enabled5 = 0 00:08
+Added setting: Enabled6 = 0 00:08
+Added setting: Placement1 = 1 00:08
+Added setting: Placement2 = 1 00:08
+Added setting: Placement3 = 1 00:08
+Added setting: Placement4 = 1 00:08
+Added setting: Placement5 = 1 00:09
+Added setting: Placement6 = 1 00:09
+Added setting: Priority1 = 1 00:09
+Added setting: Priority2 = 2 00:09
+Added setting: Priority3 = 3 00:09
+Added setting: Priority4 = 4 00:09
+Added setting: Priority5 = 5 00:09
+Added setting: Priority6 = 6 00:09
+Added setting: UpgradePriority1 = 1 00:09
+Added setting: UpgradePriority2 = 2 00:10
+Added setting: UpgradePriority3 = 3 00:10
+Added setting: UpgradePriority4 = 4 00:10
+Added setting: UpgradePriority5 = 5 00:10
+Added setting: UpgradePriority6 = 6 00:10
+Added setting: UpgradeEnabled1 = 0 00:10
+Added setting: UpgradeEnabled2 = 0 00:10
+Added setting: UpgradeEnabled3 = 0 00:10
+Added setting: UpgradeEnabled4 = 0 00:10
+Added setting: UpgradeEnabled5 = 0 00:10
+Added setting: UpgradeEnabled6 = 0 00:11
+Added setting: UpgradeLimit1 = 0 00:11
+Added setting: UpgradeLimit2 = 0 00:11
+Added setting: UpgradeLimit3 = 0 00:11
+Added setting: UpgradeLimit4 = 0 00:11
+Added setting: UpgradeLimit5 = 0 00:11
+Added setting: UpgradeLimit6 = 0 00:11
+Added setting: UpgradeLimitEnabled1 = 0 00:11
+Added setting: UpgradeLimitEnabled2 = 0 00:11
+Added setting: UpgradeLimitEnabled3 = 0 00:11
+Added setting: UpgradeLimitEnabled4 = 0 00:12
+Added setting: UpgradeLimitEnabled5 = 0 00:12
+Added setting: UpgradeLimitEnabled6 = 0 00:12
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [10:04:31 PM]
+No configuration found for mode: Default 00:00
+Added setting: Enabled1 = 0 00:00
+Added setting: Enabled2 = 0 00:00
+Added setting: Enabled3 = 0 00:00
+Added setting: Enabled4 = 0 00:00
+Added setting: Enabled5 = 0 00:00
+Added setting: Enabled6 = 0 00:00
+Added setting: Placement1 = 1 00:00
+Added setting: Placement2 = 1 00:01
+Added setting: Placement3 = 1 00:01
+Added setting: Placement4 = 1 00:01
+Added setting: Placement5 = 1 00:01
+Added setting: Placement6 = 1 00:01
+Added setting: Priority1 = 1 00:01
+Added setting: Priority2 = 2 00:01
+Added setting: Priority3 = 3 00:01
+Added setting: Priority4 = 4 00:01
+Added setting: Priority5 = 5 00:01
+Added setting: Priority6 = 6 00:01
+Added setting: UpgradePriority1 = 1 00:02
+Added setting: UpgradePriority2 = 2 00:02
+Added setting: UpgradePriority3 = 3 00:02
+Added setting: UpgradePriority4 = 4 00:02
+Added setting: UpgradePriority5 = 5 00:02
+Added setting: UpgradePriority6 = 6 00:02
+Added setting: UpgradeEnabled1 = 0 00:02
+Added setting: UpgradeEnabled2 = 0 00:02
+Added setting: UpgradeEnabled3 = 0 00:02
+Added setting: UpgradeEnabled4 = 0 00:02
+Added setting: UpgradeEnabled5 = 0 00:03
+Added setting: UpgradeEnabled6 = 0 00:03
+Added setting: UpgradeLimit1 = 0 00:03
+Added setting: UpgradeLimit2 = 0 00:03
+Added setting: UpgradeLimit3 = 0 00:03
+Added setting: UpgradeLimit4 = 0 00:03
+Added setting: UpgradeLimit5 = 0 00:03
+Added setting: UpgradeLimit6 = 0 00:03
+Added setting: UpgradeLimitEnabled1 = 0 00:03
+Added setting: UpgradeLimitEnabled2 = 0 00:03
+Added setting: UpgradeLimitEnabled3 = 0 00:03
+Added setting: UpgradeLimitEnabled4 = 0 00:04
+Added setting: UpgradeLimitEnabled5 = 0 00:04
+Added setting: UpgradeLimitEnabled6 = 0 00:04
+Saved settings for mode: Default 00:04
+Added setting: Enabled1 = 0 00:09
+Added setting: Enabled2 = 0 00:09
+Added setting: Enabled3 = 0 00:10
+Added setting: Enabled4 = 0 00:10
+Added setting: Enabled5 = 0 00:10
+Added setting: Enabled6 = 0 00:10
+Added setting: Placement1 = 1 00:10
+Added setting: Placement2 = 1 00:10
+Added setting: Placement3 = 1 00:10
+Added setting: Placement4 = 1 00:10
+Added setting: Placement5 = 1 00:10
+Added setting: Placement6 = 1 00:10
+Added setting: Priority1 = 1 00:11
+Added setting: Priority2 = 2 00:11
+Added setting: Priority3 = 3 00:11
+Added setting: Priority4 = 4 00:11
+Added setting: Priority5 = 5 00:11
+Added setting: Priority6 = 6 00:11
+Added setting: UpgradePriority1 = 1 00:11
+Added setting: UpgradePriority2 = 2 00:11
+Added setting: UpgradePriority3 = 3 00:11
+Added setting: UpgradePriority4 = 4 00:11
+Added setting: UpgradePriority5 = 5 00:12
+Added setting: UpgradePriority6 = 6 00:12
+Added setting: UpgradeEnabled1 = 0 00:12
+Added setting: UpgradeEnabled2 = 0 00:12
+Added setting: UpgradeEnabled3 = 0 00:12
+Added setting: UpgradeEnabled4 = 0 00:12
+Added setting: UpgradeEnabled5 = 0 00:12
+Added setting: UpgradeEnabled6 = 0 00:12
+Added setting: UpgradeLimit1 = 0 00:12
+Added setting: UpgradeLimit2 = 0 00:12
+Added setting: UpgradeLimit3 = 0 00:12
+Added setting: UpgradeLimit4 = 0 00:13
+Added setting: UpgradeLimit5 = 0 00:13
+Added setting: UpgradeLimit6 = 0 00:13
+Added setting: UpgradeLimitEnabled1 = 0 00:13
+Added setting: UpgradeLimitEnabled2 = 0 00:13
+Added setting: UpgradeLimitEnabled3 = 0 00:13
+Added setting: UpgradeLimitEnabled4 = 0 00:13
+Added setting: UpgradeLimitEnabled5 = 0 00:13
+Added setting: UpgradeLimitEnabled6 = 0 00:13
+Saved settings for mode: Default 00:13
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [10:06:01 PM]
+No configuration found for mode: Default 00:00
+
+==Ryn's Anime Guardians Macro v1.1==
+Start Time: [10:06:27 PM]
+No configuration found for mode: Default 00:00
+Saved settings for mode: Default 00:00
+Saved settings for mode: Default 00:02

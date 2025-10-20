@@ -94,6 +94,11 @@ StartPlacingUnits(untilSuccessful := true) {
         placements := %placements%
         placements := Integer(placements.Text)
 
+        ; Get upgradeEnabled value for this slot
+        upgradeEnabled := "upgradeEnabled" slotNum
+        upgradeEnabled := %upgradeEnabled%
+        upgradeEnabled := upgradeEnabled.Value
+
         ; Initialize count if not exists
         if !placedCounts.Has(slotNum)
             placedCounts[slotNum] := 0
@@ -152,9 +157,10 @@ StartPlacingUnits(untilSuccessful := true) {
                             if (!NukeUnitSlotEnabled.Value && slotNum != NukeUnitSlot.Value) {
                                 HandleAutoAbility(slotNum)
                             }
-                            HandleAutoUpgrade()
-                            FixClick(341, 226) ; close unit ui
-                            UpgradePlacedUnits()
+                            FixClick(230, 255) ; close unit ui
+                            if (upgradeEnabled) {
+                                EnableAutoUpgrade(slotNum)
+                            }
                         } else {
                             PostPlacementChecks()
                         }
@@ -192,12 +198,14 @@ StartPlacingUnits(untilSuccessful := true) {
                             if (!NukeUnitSlotEnabled.Value && slotNum != NukeUnitSlot.Value) {
                                 HandleAutoAbility(slotNum)
                             }
-                            HandleAutoUpgrade()
-                            FixClick(341, 226) ; close unit ui
-                            UpgradePlacedUnits()
+
+                            if (upgradeEnabled) {
+                                EnableAutoUpgrade(slotNum)
+                            }
+
+                            FixClick(230, 255) ; close unit ui
                             break ; Move to the next placement spot
                         }
-                        UpgradePlacedUnits()
                         PostPlacementChecks()
                         Sleep(500) ; Prevents spamming clicks too fast
                     }
@@ -275,4 +283,16 @@ GetPlacementSpeed() {
 
     if speedIndex is number  ; Ensure it's a number
         return speeds[speedIndex]  ; Use the value directly from the array
+}
+
+EnableAutoUpgrade(slot) {
+    AddToLog("Enabling Auto Upgrade for Slot " slot)
+    ClickUnit(slot, true)
+    CloseMenu("Unit Manager")
+}
+
+GetAutoUpgrade(slotNum) {
+    global
+    priorityVar := "upgradeEnabled" slotNum
+    return %priorityVar%.Value
 }

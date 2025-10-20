@@ -5,7 +5,7 @@
 
 ; Application Info
 global GameTitle := "Ryn's Anime Guardians Macro "
-global version := "v1.0"
+global version := "v1.1"
 global rblxID := "ahk_exe RobloxPlayerBeta.exe"
 ;Coordinate and Positioning Variables
 global targetWidth := 816
@@ -31,7 +31,7 @@ global waitingForClick := false
 global savedCoords := [[], []]  ; Index-based: one array for each preset
 global savedWalkCoords := [[], []]  ; Index-based: one array for each preset
 ;Nuke Ability
-global nukeCoords := []
+global nukeCoords := { x: 400, y: 300 }
 ;Hotkeys
 global F1Key := "F1"
 global F2Key := "F2"
@@ -425,8 +425,9 @@ AddUnitCard(MainUI, index, x, y) {
     unit.PlacementText        := AddText(x + 90, y + 2, 80, 20, "+BackgroundTrans", "Placements")
     unit.PriorityText         := AddText(x + 185, y + 2, 60, 20, "BackgroundTrans", "Priority")
 
+    MainUI.SetFont("s7 c" uiTheme[1])
+    unit.PlaceAndUpgradeText  := AddText(x + 258, y + 2, 250, 20, "BackgroundTrans", "Auto Upgrade After Placement")
     MainUI.SetFont("s9 c" uiTheme[1])
-    unit.PlaceAndUpgradeText  := AddText(x + 261, y + 2, 250, 20, "BackgroundTrans", "Upgrade While Placing")
     unit.UpgradeTitle         := AddText(x + 310, y + 20, 250, 25, "+BackgroundTrans", "Enabled")
 
     if (!unitUpgradeLimitDisabled) {

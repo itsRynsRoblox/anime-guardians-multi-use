@@ -51,8 +51,8 @@ ZoomLevel=20
 
 [Upgrade Settings]
 Auto Upgrade=0
-Unit Manager Upgrade System=0
-Priority Upgrade=0
+Unit Manager Upgrade System=1
+Priority Upgrade=1
 
 [Auto Challenge Settings]
 Auto Challenge=0
@@ -61,15 +61,15 @@ Auto Challenge=0
 Farm More Portals=0
 
 [Gate Settings]
-Premade Gate Movement=0
+Premade Gate Movement=1
 
 [Unit Settings]
 Nuke Enabled=1
 Nuke Slot=1
-Nuke Coords=400,300
-Nuke At Specific Wave=1
-Nuke Wave=10
-Nuke Delay=0
+Nuke Coords=268,281
+Nuke At Specific Wave=0
+Nuke Wave=1
+Nuke Delay=10
 Slot 1 Minion=0
 Slot 2 Minion=0
 Slot 3 Minion=0
@@ -77,4 +77,4 @@ Slot 4 Minion=0
 Slot 5 Minion=0
 Slot 6 Minion=0
 Check If Sold=0
-Check If Sold Timer=0
+Check If Sold Timer=10
